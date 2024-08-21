@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Functional", "src\ScrubJay.Functional.csproj", "{ABC6F64D-7AEF-4C6A-9088-F66CA478AC85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "sandbox\Sandbox.csproj", "{786E1729-C4EA-4573-A6BC-20929D01F84E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ABC6F64D-7AEF-4C6A-9088-F66CA478AC85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABC6F64D-7AEF-4C6A-9088-F66CA478AC85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABC6F64D-7AEF-4C6A-9088-F66CA478AC85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABC6F64D-7AEF-4C6A-9088-F66CA478AC85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{786E1729-C4EA-4573-A6BC-20929D01F84E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{786E1729-C4EA-4573-A6BC-20929D01F84E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{786E1729-C4EA-4573-A6BC-20929D01F84E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{786E1729-C4EA-4573-A6BC-20929D01F84E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

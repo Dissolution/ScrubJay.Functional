@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>
+            <!-- All supported .Net Core versions -->
+            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
+            net8.0;net7.0;net6.0;
+            <!-- Support for both .Net Standard versions -->
+            <!-- .Net Standard 2.0 is included so this package can be consumed by Source Generators, which are currently limited to that framework -->
+            netstandard2.1;netstandard2.0;
+            <!-- Only supported version of .Net Framework -->
+            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
+            net481;                         
+        </TargetFrameworks>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        
+        <RootNamespace>ScrubJay.Functional</RootNamespace>
+        
+        
+        <!-- Setup NuGet -->
+        <PackageId>ScrubJay.Functional</PackageId>
+        <IsPackable>true</IsPackable>
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        
+        <!-- NuGet Package Information -->
+        <Title>ScrubJay.Functional</Title>
+        <Authors>Timothy Jay</Authors>
+        <Description>
+            Functional types and utilities such as Result, Option, and Unit for C#
+        </Description>
+        <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Functional</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>jay.png</PackageIcon>
+        <PackageOutputPath>..\packages\</PackageOutputPath>
+        <PackageVersion>0.0.1-alpha</PackageVersion>
+    </PropertyGroup>
+
+    <!-- NuGet -->
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
+        <None Include="..\jay.png" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
+    <!-- Global Usings -->
+    <ItemGroup>
+        <Using Include="System.ComponentModel"/>
+        <Using Include="System.Diagnostics.CodeAnalysis"/>
+        <Using Include="System.Numerics"/>
+        <Using Include="System.Runtime.CompilerServices"/>
+        <Using Include="System.Runtime.InteropServices"/>
+        <Using Include="System.Collections"/>
+        
+        <Using Include="ScrubJay.Functional.GlobalHelper" Static="true"/>
+        
+        <Using Include="JetBrains.Annotations"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2023.3.0">
+          <PrivateAssets>all</PrivateAssets>
+      </PackageReference>
+      <PackageReference Include="Polyfill" Version="6.4.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+</Project>
