@@ -56,8 +56,6 @@
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="System.Collections"/>
         
-        <Using Include="ScrubJay.Functional.GlobalHelper" Static="true"/>
-        
         <Using Include="JetBrains.Annotations"/>
     </ItemGroup>
     

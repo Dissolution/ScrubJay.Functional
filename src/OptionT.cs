@@ -226,10 +226,10 @@ public readonly struct Option<T> :
     {
         if (IsSome(out var value))
         {
-            return Some<TNew>(map(value));
+            return Option.Some<TNew>(map(value));
         }
 
-        return Option<TNew>.None;
+        return Option.None;
     }
 
     /// <summary>

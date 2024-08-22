@@ -97,13 +97,13 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            asOk = Some(_ok!);
+            asOk = Option.Some(_ok!);
             asError = Option.None;
         }
         else
         {
             asOk = Option.None;
-            asError = Some(_error!);
+            asError = Option.Some(_error!);
         }
     }
 
@@ -202,7 +202,7 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            return Some(_ok!);
+            return Option.Some(_ok!);
         }
 
         return Option.None;
@@ -348,7 +348,7 @@ public readonly struct Result<TOk, TError> :
     public Option<TError> AsError()
     {
         if (!_isOk)
-            return Some(_error!);
+            return Option.Some(_error!);
         return Option.None;
     }
 
@@ -426,7 +426,7 @@ public readonly struct Result<TOk, TError> :
     {
         if (_isOk)
         {
-            return Some(_ok!);
+            return Option.Some(_ok!);
         }
 
         return Option.None;
