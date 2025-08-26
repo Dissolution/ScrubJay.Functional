@@ -2,29 +2,29 @@
 
     <PropertyGroup>
         <TargetFrameworks>
-            <!-- All supported .Net Core versions -->
-            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core -->
-            net8.0;net7.0;net6.0;
-            <!-- Support for both .Net Standard versions -->
-            <!-- .Net Standard 2.0 is included so this package can be consumed by Source Generators, which are currently limited to that framework -->
+            <!-- This library is intended to support as many versions as possible -->
+            
+            <!-- .NET Core -->
+            net10.0;net9.0;net8.0;net7.0;net6.0;net5.0;
+            <!-- .NET Standard -->
             netstandard2.1;netstandard2.0;
-            <!-- Only supported version of .Net Framework -->
-            <!-- https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-framework -->
-            net481;                         
+            <!-- Framework -->
+            net481;
         </TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        
+
         <RootNamespace>ScrubJay.Functional</RootNamespace>
-        
-        
+        <AssemblyName>ScrubJay.Functional</AssemblyName>
+
+
         <!-- Setup NuGet -->
         <PackageId>ScrubJay.Functional</PackageId>
         <IsPackable>true</IsPackable>
         <EnablePackageValidation>true</EnablePackageValidation>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        
+
         <!-- NuGet Package Information -->
         <Title>ScrubJay.Functional</Title>
         <Authors>Timothy Jay</Authors>
@@ -42,11 +42,15 @@
 
     <!-- NuGet -->
     <ItemGroup>
-        <None Include="..\README.md" Pack="true" PackagePath="\"/>
         <None Include="..\LICENSE.txt" Pack="true" PackagePath="\"/>
         <None Include="..\jay.png" Pack="true" PackagePath="\"/>
+        <None Include="..\README.md">
+          <Pack>true</Pack>
+          <PackagePath>\</PackagePath>
+          <Link>backup\README.md</Link>
+        </None>
     </ItemGroup>
-    
+
     <!-- Global Usings -->
     <ItemGroup>
         <Using Include="System.ComponentModel"/>
@@ -55,17 +59,24 @@
         <Using Include="System.Runtime.CompilerServices"/>
         <Using Include="System.Runtime.InteropServices"/>
         <Using Include="System.Collections"/>
-        
+
         <Using Include="JetBrains.Annotations"/>
+        <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2025.2.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Polyfill" Version="8.8.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <!-- .NET Framework and .NET Standard require extra packages -->
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0' Or '$(TargetFramework)' == 'netstandard2.1'">
+        <PackageReference Include="System.Memory" Version="4.6.3"/>
     </ItemGroup>
     
-    <ItemGroup>
-      <PackageReference Include="JetBrains.Annotations" Version="2023.3.0">
-          <PrivateAssets>all</PrivateAssets>
-      </PackageReference>
-      <PackageReference Include="Polyfill" Version="6.4.1">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      </PackageReference>
-    </ItemGroup>
 </Project>

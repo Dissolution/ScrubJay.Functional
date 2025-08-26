@@ -2,7 +2,6 @@
 [Oo]bj/
 packages/
 artifacts/
-sandbox/
 
 # Nuget
 .nuget/
@@ -24,5 +23,4 @@ _ReSharper.*
 *.ReSharper.user
 *.resharper.user
 .idea/
-*.DotSettings
-*.DotSettings.*
+*.DotSettings.user

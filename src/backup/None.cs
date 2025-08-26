@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Functional;
+﻿namespace ScrubJay.Functional.backup;
 
 /// <summary>
 /// The None part of <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
