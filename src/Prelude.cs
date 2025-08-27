@@ -1,7 +1,9 @@
 ﻿// alias `ReadOnlySpan<char>` to `text`
 
 // prevent attribute name conflict with `JetBrains.Annotations.NotNullAttribute`
+
 global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+using ScrubJay.Functional.IMPL;
 
 #pragma warning disable CA1715
 
@@ -26,10 +28,22 @@ namespace ScrubJay.Functional;
 public static class Prelude
 {
     public static Unit Unit { get; } = default(Unit);
-    
+
     public static IMPL.None None { get; } = default(IMPL.None);
+
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
 
+    public static IMPL.Ok<T> Ok<T>(T value) 
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => new Ok<T>(value);
+
+    public static IMPL.Error<T> Error<T>(T error)
+#if NET9_0_OR_GREATER
+        where T : allows ref struct
+#endif
+        => new Error<T>(error);
 
     /*
     /// <summary>

@@ -314,12 +314,7 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
         {
-            if (_value is null)
-            {
-                return string.Empty;
-            }
-
-            return typeof(T).Name;
+            return $"Some<{typeof(T)}>({Compat<T>.ToString(_value)}";
         }
 
         return nameof(None);
