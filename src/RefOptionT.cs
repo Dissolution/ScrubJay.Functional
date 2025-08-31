@@ -34,6 +34,7 @@ public readonly ref struct RefOption<T>
 #endregion
 
     public static RefOption<T> None => default;
+    
     public static RefOption<T> Some(T value) => new(value);
 
     // Is this Option.Some?

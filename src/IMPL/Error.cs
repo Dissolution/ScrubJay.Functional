@@ -2,12 +2,7 @@
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-#if NET9_0_OR_GREATER
-public readonly ref struct Error<E>
-    where E : allows ref struct
-#else
 public readonly struct Error<E>
-#endif
 {
     public readonly E Value;
 

@@ -46,70 +46,39 @@ public readonly struct Option<T> :
     IComparable<None>,
     //IComparable<T>,
     IEnumerable<T>,
-    IEnumerable,
 #if NET6_0_OR_GREATER
     ISpanFormattable,
 #endif
     IFormattable
 {
 #region Operators
-
-    /// <summary>
-    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
-    /// </summary>
+    
     public static implicit operator bool(Option<T> option) => option._isSome;
-
-    /// <summary>
-    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
-    /// </summary>
+    public static implicit operator Option<T>(None _) => None;
+    
     public static bool operator true(Option<T> option) => option._isSome;
-
-    /// <summary>
-    /// Implicitly convert an <see cref="Option{T}"/> into <c>true</c> if it is Some and <c>false</c> if it is None
-    /// </summary>
     public static bool operator false(Option<T> option) => !option._isSome;
 
-    /// <summary>
-    /// Implicitly convert a standalone <see cref="None"/> to an <see cref="Option{T}"/>.<see cref="Option{T}.None"/>
-    /// </summary>
-    public static implicit operator Option<T>(None _) => None;
-
-    // We pass equality and comparison down to T values
 
     public static bool operator ==(Option<T> left, Option<T> right) => left.Equals(right);
-
     public static bool operator !=(Option<T> left, Option<T> right) => !left.Equals(right);
-
     public static bool operator >(Option<T> left, Option<T> right) => left.CompareTo(right) > 0;
-
     public static bool operator >=(Option<T> left, Option<T> right) => left.CompareTo(right) >= 0;
-
     public static bool operator <(Option<T> left, Option<T> right) => left.CompareTo(right) < 0;
-
     public static bool operator <=(Option<T> left, Option<T> right) => left.CompareTo(right) <= 0;
-
+    
     public static bool operator ==(Option<T> option, None _) => option.IsNone();
-
     public static bool operator !=(Option<T> option, None _) => option._isSome;
-
     public static bool operator >(Option<T> option, None none) => option.CompareTo(none) > 0;
-
     public static bool operator >=(Option<T> option, None none) => option.CompareTo(none) >= 0;
-
     public static bool operator <(Option<T> option, None none) => option.CompareTo(none) < 0;
-
     public static bool operator <=(Option<T> option, None none) => option.CompareTo(none) <= 0;
-
+    
     public static bool operator ==(Option<T> option, T some) => option.Equals(some);
-
     public static bool operator !=(Option<T> option, T some) => !option.Equals(some);
-
     public static bool operator >(Option<T> option, T some) => option.CompareTo(some) > 0;
-
     public static bool operator >=(Option<T> option, T some) => option.CompareTo(some) >= 0;
-
     public static bool operator <(Option<T> option, T some) => option.CompareTo(some) < 0;
-
     public static bool operator <=(Option<T> option, T some) => option.CompareTo(some) <= 0;
 
 #endregion
@@ -123,15 +92,7 @@ public readonly struct Option<T> :
     /// Get an <see cref="Option{T}"/>.Some containing a <paramref name="value"/>
     /// </summary>
     public static Option<T> Some(T value) => new(value);
-
-    // public delegate bool TryOut([MaybeNullWhen(false)] out T value);
-    //
-    // public static Option<T> From(TryOut tryOut)
-    // {
-    //     if (tryOut(out var value))
-    //         return new(value);
-    //     return default;
-    // }
+    
 
     // Is this Option.Some?
     // if someone does default(Option), this will be false, so default(Option) == None
@@ -152,18 +113,7 @@ public readonly struct Option<T> :
 #region Some-ness
 
     public bool IsSome() => _isSome;
-
-    /// <summary>
-    /// Does this <see cref="Option{T}"/> contain <see cref="Some"/> value?
-    /// </summary>
-    /// <param name="value">
-    /// If this is <see cref="Some"/>, this will be the contained value<br/>
-    /// if this is <see cref="None"/>, it will be <c>default(T)</c>
-    /// </param>
-    /// <returns>
-    /// <c>true</c> and fills <paramref name="value"/> if this is <see cref="Some"/><br/>
-    /// <c>false</c> if it is <see cref="None"/>
-    /// </returns>
+    
     public bool IsSome([MaybeNullWhen(false)] out T value)
     {
         if (_isSome)
@@ -176,16 +126,8 @@ public readonly struct Option<T> :
         return false;
     }
 
-
     public bool IsSomeAnd(Func<T, bool> predicate) => _isSome && predicate(_value!);
-
-    public T SomeOrThrow(string? errorMessage = null)
-    {
-        if (_isSome)
-            return _value!;
-        throw new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
-    }
-
+    
     public T SomeOr(T fallback)
     {
         if (_isSome)
@@ -206,6 +148,14 @@ public readonly struct Option<T> :
             return _value!;
         return default;
     }
+    
+    public T SomeOrThrow(string? errorMessage = null)
+    {
+        if (_isSome)
+            return _value!;
+        throw new InvalidOperationException(errorMessage ?? $"{ToString()} is not Some");
+    }
+
 
 #endregion
 
@@ -263,14 +213,6 @@ public readonly struct Option<T> :
     }
 
 #endregion
-
-    //
-    // public Result<T> AsResult(string? errorMessage = null)
-    // {
-    //     if (_isSome)
-    //         return Ok(_value!);
-    //     return new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
-    // }
 
 #region Compare
 
@@ -427,8 +369,16 @@ public readonly struct Option<T> :
     public override int GetHashCode()
     {
         if (_isSome)
-            return _value?.GetHashCode() ?? 0;
-        return 0;
+        {
+            if (_value is not null)
+            {
+                return _value.GetHashCode();
+            }
+
+            return 0;
+        }
+
+        return -1;
     }
 
 #endregion
@@ -566,73 +516,46 @@ public readonly struct Option<T> :
         ReadOnlySpan<char> format = default,
         IFormatProvider? provider = null)
     {
-        string? str;
-
-        if (_isSome)
+        // todo: Make this more efficient
+        string fmt = ToString(format.ToString(), provider);
+        if (fmt.TryCopyTo(destination))
         {
-            if (_value is IFormattable)
-            {
-#if NET6_0_OR_GREATER
-                if (_value is ISpanFormattable)
-                {
-                    return ((ISpanFormattable)_value).TryFormat(destination, out charsWritten, format, provider);
-                }
-                str = ((IFormattable)_value).ToString(new string(format), provider);
-#elif NETSTANDARD || NETFRAMEWORK
-                str = ((IFormattable)_value).ToString(format.ToString(), provider);
-#else
-                str = ((IFormattable)_value).ToString(new string(format), provider);
-#endif
-            }
-            else
-            {
-                str = _value?.ToString();
-            }
+            charsWritten = fmt.Length;
+            return true;
         }
-        else
-        {
-            str = nameof(None);
-        }
-
-        if (str is not null)
-        {
-            if (str.TryCopyTo(destination))
-            {
-                charsWritten = str.Length;
-                return true;
-            }
-
-            charsWritten = 0;
-            return false;
-        }
-
+        
         charsWritten = 0;
-        return true;
+        return false;
     }
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         if (_isSome)
         {
+            string? str;
             if (_value is IFormattable)
             {
-                return ((IFormattable)_value).ToString(format, provider);
+                str = ((IFormattable)_value).ToString(format, provider);
+            }
+            else
+            {
+                str = _value?.ToString();
             }
 
-            return _value?.ToString() ?? "";
+            return $"Option<{typeof(T).Name}>.Some({str})";
         }
 
-        return nameof(None);
+        return $"Option<{typeof(T).Name}>.None";
     }
 
     public override string ToString()
     {
         if (_isSome)
         {
-            return _value?.ToString() ?? "";
+            return $"Option<{typeof(T).Name}>.Some({_value})";
         }
 
-        return nameof(None);
+        return $"Option<{typeof(T).Name}>.None";
     }
 
 #endregion
