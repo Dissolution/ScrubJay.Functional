@@ -552,10 +552,10 @@ public readonly struct Option<T> :
     {
         if (_isSome)
         {
-            return $"Option<{typeof(T).Name}>.Some({_value})";
+            return $"Option<{typeof(T)}>.Some({_value})";
         }
 
-        return $"Option<{typeof(T).Name}>.None";
+        return $"Option<{typeof(T)}>.None";
     }
 
 #endregion

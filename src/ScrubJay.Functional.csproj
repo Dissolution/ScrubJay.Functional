@@ -5,7 +5,7 @@
             <!-- This library is intended to support as many versions as possible -->
             
             <!-- .NET Core -->
-            net10.0;net9.0;net8.0;net7.0;net6.0;net5.0;
+            net9.0;net8.0;net7.0;net6.0;net5.0;
             <!-- .NET Standard -->
             netstandard2.1;netstandard2.0;
             <!-- Framework -->
@@ -79,4 +79,10 @@
         <PackageReference Include="System.Memory" Version="4.6.3"/>
     </ItemGroup>
     
+    <!-- Expose our internals to friends-->
+    <ItemGroup>
+        <InternalsVisibleTo Include="$(AssemblyName).Tests"/>
+        <InternalsVisibleTo Include="$(AssemblyName).ConsoleApp"/>
+
+    </ItemGroup>
 </Project>

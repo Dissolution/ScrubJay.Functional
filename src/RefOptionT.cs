@@ -167,15 +167,7 @@ public readonly ref struct RefOption<T>
     }
 
 #endregion
-
-    //
-    // public Result<T> AsResult(string? errorMessage = null)
-    // {
-    //     if (_isSome)
-    //         return Ok(_value!);
-    //     return new InvalidOperationException(errorMessage ?? $"Option<{typeof(T)}> is None");
-    // }
-
+    
 #region LINQ + IEnumerable
 
     public RefOption<N> Select<N>(Func<T, N> selector)
@@ -261,12 +253,11 @@ public readonly ref struct RefOption<T>
 
     [PublicAPI]
     [MustDisposeResource(false)]
-    public ref struct OptionEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    public ref struct OptionEnumerator
     {
         private readonly RefOption<T> _option;
         private bool _canYield;
 
-        readonly object? IEnumerator.Current => throw new InvalidOperationException();
         public readonly T Current => _option.SomeOrThrow();
 
         public OptionEnumerator(RefOption<T> option)
@@ -292,11 +283,6 @@ public readonly ref struct RefOption<T>
         {
             _canYield = _option._isSome;
         }
-
-        readonly void IDisposable.Dispose()
-        {
-            /* Do Nothing */
-        }
     }
 
 #endregion
@@ -315,9 +301,9 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
         {
-            return $"Some<{typeof(T)}>({Compat<T>.ToString(_value)}";
+            return $"RefOption<{typeof(T)}>.Some({Compat.ToString(_value)}";
         }
 
-        return nameof(None);
+        return $"RefOption<{typeof(T)}>.None";
     }
 }

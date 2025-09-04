@@ -14,7 +14,7 @@ public static class Result
     /// <returns>
     /// The <see cref="Result{T}"/> of the invocation
     /// </returns>
-    public static Result<Unit> Invoke(Action? action)
+    public static Result<Unit> Try(Action? action)
     {
         if (action is null)
         {
@@ -32,7 +32,7 @@ public static class Result
         }
     }
 
-    public static Result<Unit> Invoke<I>(
+    public static Result<Unit> Try<I>(
         [NotNullWhen(true)] I? instance,
         [NotNullWhen(true)] Action<I>? instanceAction)
     {
@@ -53,7 +53,7 @@ public static class Result
     }
 
 
-    public static Result<T> Invoke<T>(Func<T>? func)
+    public static Result<T> Try<T>(Func<T>? func)
     {
         if (func is null)
             return new ArgumentNullException(nameof(func));
@@ -68,7 +68,7 @@ public static class Result
         }
     }
 
-    public static Result<T> Invoke<I, T>(
+    public static Result<T> Try<I, T>(
         [NotNullWhen(true)] I? instance,
         [NotNullWhen(true)] Func<I, T>? instanceFunc)
     {
@@ -89,11 +89,11 @@ public static class Result
 
 #region Extensions
 
-    public static Result<T> Flatten<T>(this Result<Result<T>> resultResult)
-        => resultResult.Select(static result => result);
-
-    public static Result<T> Flatten<T>(this Result<Option<T>> resultResult)
-        => resultResult.Select(static option => option);
+    // public static Result<T> Flatten<T>(this Result<Result<T>> resultResult)
+    //     => resultResult.Select(static result => result);
+    //
+    // public static Result<T> Flatten<T>(this Result<Option<T>> resultResult)
+    //     => resultResult.Select(static option => option);
 
 #endregion
 }

@@ -1,14 +1,49 @@
-﻿using ScrubJay.Functional;
-using static ScrubJay.Functional.Prelude;
+﻿using System.Diagnostics;
+using ScrubJay.Functional;
 
 
-var n = None;
-var a = Option.NotNull(147);
-var s = Option.NotNull("abc");
-var s2 = Option.NotNull((int?)null);
-var r = RefOption<ReadOnlySpan<char>>.Some("abc".AsSpan());
-Func<string, Unit> f = str =>
+Result<double> Parse(string input) =>
+    Result.Try(() => double.Parse(input));
+
+Result<double> Divide(double x, double y) =>
+    Result.Try(() => x / y);
+
+async Result<double> Do(string a, string b)
 {
-    Console.WriteLine(str);
-    return default;
-};
+    var x = await Parse(a);
+    var y = await Parse(b);
+    await Task.Delay(100);
+    Console.WriteLine("Successfully parsed inputs");
+    return await Divide(x, y);
+}
+
+async Result<double> Do2(string str)
+{
+    return await Parse(str);
+}
+
+// Usage
+var output =
+    from x in Parse("147")
+    from y in Parse("13")
+    from z in Divide(x,y)
+    select new { F64 = x };
+
+
+
+Console.WriteLine((object)output);
+Debugger.Break();
+return;
+
+
+namespace ScrubJay.Functional.ConsoleApp
+{
+    // static class Testing
+    // {
+    //     public static async Scratch.Result<(int, string)> GetThingAsync()
+    //     {
+    //         await Task.Delay(100);
+    //         return await Scratch.Result<(int, string)>.Ok((147, "TJ"));
+    //     }
+    // }
+}

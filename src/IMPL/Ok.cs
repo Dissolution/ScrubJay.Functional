@@ -2,7 +2,10 @@ namespace ScrubJay.Functional.IMPL;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public readonly struct Ok<T>
+public readonly ref struct Ok<T>
+#if NET9_0_OR_GREATER
+    where T : allows ref struct
+#endif
 {
     public readonly T Value;
 
@@ -18,6 +21,6 @@ public readonly struct Ok<T>
 
     public override string ToString()
     {
-        return $"Ok<{typeof(T)}>";
+        return $"Ok<{typeof(T)}>({Compat.ToString(Value)})";
     }
 }

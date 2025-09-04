@@ -488,67 +488,51 @@ public readonly struct Result<T> :
 
 #endregion
 
-
 #region Linq
 
     public Result<N> Select<N>(Func<T, N> selector)
     {
-        if (_isOk)
+        if (IsOk(out var value, out var error))
         {
-            return Result<N>.Ok(selector(_value!));
+            return Result<N>.Ok(selector(value));
         }
-
-        return Result<N>.Error(_error!);
-    }
-
-    public Result<N> Select<N>(Func<T, Option<N>> selector)
-    {
-        if (_isOk && selector(_value!).IsSome(out var value))
+        else
         {
-            return Result<N>.Ok(value);
+            return error;
         }
-
-        return Result<N>.Error(_error!);
     }
 
     public Result<N> Select<N>(Func<T, Result<N>> selector)
     {
-        if (_isOk)
+        if (IsOk(out var value, out var error))
         {
-            return selector(_value!);
+            return selector(value!);
         }
-
-        return Result<N>.Error(_error!);
-    }
-
-    public Result<N> Select<X, N>(X state, Func<X, T, N> selector)
-    {
-        if (_isOk)
+        else
         {
-            return Result<N>.Ok(selector(state, _value!));
+            return error;
         }
-
-        return Result<N>.Error(_error!);
-    }
-
-    public Result<N> SelectMany<N>(Func<T, Result<N>> newSelector)
-    {
-        if (_isOk)
-        {
-            return newSelector(_value!);
-        }
-
-        return Result<N>.Error(_error!);
     }
 
     public Result<N> SelectMany<K, N>(Func<T, Result<K>> keySelector, Func<T, K, N> newSelector)
     {
-        if (_isOk && keySelector(_value!).IsOk(out var key))
+        if (IsOk(out var value, out var error))
         {
-            return Result<N>.Ok(newSelector(_value!, key));
+            var keyResult = keySelector(value!);
+            if (keyResult.IsOk(out var key, out error))
+            {
+                var newSelect = newSelector(value, key);
+                return Result<N>.Ok(newSelect);
+            }
+            else
+            {
+                return error;
+            }
         }
-
-        return Result<N>.Error(_error!);
+        else
+        {
+            return error;
+        }
     }
 
 #endregion

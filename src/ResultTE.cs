@@ -81,7 +81,7 @@ public readonly struct Result<T, E> :
 
     public static bool operator <=(Result<T, E> result, T? ok)
         => result.CompareTo(ok) <= 0;
-    
+
     public static bool operator >(Result<T, E> result, E? error)
         => result.CompareTo(error) > 0;
 
@@ -135,7 +135,7 @@ public readonly struct Result<T, E> :
 #region Ok
 
     public bool IsOk() => _isOk;
-    
+
     public bool IsOk([MaybeNullWhen(false)] out T value)
     {
         if (_isOk)
@@ -200,7 +200,7 @@ public readonly struct Result<T, E> :
             return _value!;
         return default(T);
     }
-    
+
     /// <summary>
     /// Returns the contained Ok value
     /// </summary>
@@ -219,7 +219,7 @@ public readonly struct Result<T, E> :
             throw ex;
         throw new InvalidOperationException(exceptionMessage ?? $"{ToString()} is not Ok");
     }
-    
+
 #endregion
 
 #region Error
@@ -268,7 +268,7 @@ public readonly struct Result<T, E> :
             return _error!;
         return getFallback();
     }
-    
+
     public E? ErrorOrDefault()
     {
         if (!_isOk)
@@ -319,7 +319,7 @@ public readonly struct Result<T, E> :
     }
 
 #endregion
-    
+
     public Option<T> AsOption()
     {
         if (_isOk)
@@ -331,7 +331,7 @@ public readonly struct Result<T, E> :
             return None;
         }
     }
-    
+
 #region Compare
 
     public int CompareTo(Result<T, E> other)
@@ -364,7 +364,7 @@ public readonly struct Result<T, E> :
     {
         if (_isOk)
         {
-            return Comparer<T>.Default.Compare(_value!, ok);
+            return Comparer<T>.Default.Compare(_value!, ok!);
         }
         else
         {
@@ -372,7 +372,7 @@ public readonly struct Result<T, E> :
             return 1;
         }
     }
-    
+
     public int CompareTo(E? error)
     {
         if (_isOk)
@@ -475,7 +475,7 @@ public readonly struct Result<T, E> :
     public string ToString(string? format, IFormatProvider? provider = null)
     {
         string? str;
-        
+
         if (_isOk)
         {
             if (_value is IFormattable)
@@ -517,9 +517,10 @@ public readonly struct Result<T, E> :
             charsWritten = str.Length;
             return true;
         }
-        
+
         charsWritten = 0;
-        return false;;
+        return false;
+        ;
     }
 
     public override string ToString()
@@ -535,30 +536,18 @@ public readonly struct Result<T, E> :
     }
 
 #endregion
-    
+
 #region Linq
 
     public Result<N, E> Select<N>(Func<T, N> selector)
     {
         if (_isOk)
         {
-            return Result<N,E>.Ok(selector(_value!));
+            return Result<N, E>.Ok(selector(_value!));
         }
 
         return Error<E>(_error!);
     }
-
-
-    public Result<N, E> Select<N>(Func<T, Option<N>> selector)
-    {
-        if (_isOk && selector(_value!).IsSome(out var value))
-        {
-            return Ok<N>(value);
-        }
-
-        return Error<E>(_error!);
-    }
-
 
     public Result<N, E> Select<N>(Func<T, Result<N, E>> selector)
     {
@@ -570,43 +559,31 @@ public readonly struct Result<T, E> :
         return Error<E>(_error!);
     }
 
-
-    public Result<N, E> Select<X, N>(X state, Func<X, T, N> selector)
-    {
-        if (_isOk)
-        {
-            return Result<N, E>.Ok(selector(state, _value!));
-        }
-
-        return Error<E>(_error!);
-    }
-
-
-    public Result<N, E> SelectMany<N>(Func<T, Result<N, E>> newSelector)
-    {
-        if (_isOk)
-        {
-            return newSelector(_value!);
-        }
-
-        return Error<E>(_error!);
-    }
-
-
     public Result<N, E> SelectMany<K, N>(
         Func<T, Result<K, E>> keySelector,
         Func<T, K, N> newSelector)
     {
-        if (_isOk && keySelector(_value!).IsOk(out var key))
+        if (IsOk(out var value, out var error))
         {
-            return Result<N, E>.Ok(newSelector(_value!, key));
+            var keyResult = keySelector(value!);
+            if (keyResult.IsOk(out var key, out error))
+            {
+                var newSelect = newSelector(value, key);
+                return Result<N, E>.Ok(newSelect);
+            }
+            else
+            {
+                return Result<N, E>.Error(error);
+            }
         }
-
-        return Error<E>(_error!);
+        else
+        {
+            return Result<N, E>.Error(error);
+        }
     }
 
-    #endregion
-    
+#endregion
+
 #region IEnumerable
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -658,5 +635,4 @@ public readonly struct Result<T, E> :
     }
 
 #endregion
-    
 }

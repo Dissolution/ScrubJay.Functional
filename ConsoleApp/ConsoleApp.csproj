@@ -2,7 +2,11 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <AssemblyName>ScrubJay.Functional.ConsoleApp</AssemblyName>
+        <RootNamespace>ScrubJay.Functional.ConsoleApp</RootNamespace>
+        
         <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>

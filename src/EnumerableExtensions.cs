@@ -1,4 +1,4 @@
-﻿namespace ScrubJay.Functional.Extensions;
+﻿namespace ScrubJay.Functional;
 
 [PublicAPI]
 public static class EnumerableExtensions

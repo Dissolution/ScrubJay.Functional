@@ -2,7 +2,10 @@
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public readonly struct Error<E>
+public readonly ref struct Error<E>
+#if NET9_0_OR_GREATER
+    where E : allows ref struct
+#endif
 {
     public readonly E Value;
 
@@ -18,6 +21,6 @@ public readonly struct Error<E>
 
     public override string ToString()
     {
-        return $"Error<{typeof(E)}>";
+        return $"Error<{typeof(E)}>({Compat.ToString(Value)})";
     }
 }

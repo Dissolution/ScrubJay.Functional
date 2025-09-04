@@ -40,6 +40,7 @@ public readonly struct None :
     public static ref readonly None Ref => ref Default;
     
     public int CompareTo(None _) => 0;
+    
     public bool Equals(None _) => true;
 
     public override bool Equals([NotNullWhen(true)] object? obj) 
@@ -51,5 +52,6 @@ public readonly struct None :
         };
     
     public override int GetHashCode() => 0;
+    
     public override string ToString() => nameof(None);
 }
