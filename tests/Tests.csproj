@@ -1,13 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net7.0;net6.0;net481;</TargetFrameworks>
-        <LangVersion>latest</LangVersion>
+        <TargetFrameworks>net10.0;net8.0;</TargetFrameworks>
+        <SuppressTfmSupportBuildErrors>true</SuppressTfmSupportBuildErrors>
+        <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+<!--        <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>-->
+        <OutputType>Exe</OutputType>
+        
         <AssemblyName>ScrubJay.Functional.Tests</AssemblyName>
         <RootNamespace>ScrubJay.Functional.Tests</RootNamespace>
         
@@ -15,16 +19,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-        <PackageReference Include="xunit" Version="2.8.1" />
-        <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="coverlet.collector" Version="6.0.2">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+        <PackageReference Include="xunit.v3" Version="2.0.3" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" />
     </ItemGroup>
 
     <!-- Project References -->
