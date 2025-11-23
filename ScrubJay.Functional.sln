@@ -2,7 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Functional", "src\ScrubJay.Functional.csproj", "{ABC6F64D-7AEF-4C6A-9088-F66CA478AC85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "tests\Tests.csproj", "{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Functional.Tests", "tests\ScrubJay.Functional.Tests.csproj", "{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Functional.Json", "ScrubJay.Functional.Json\ScrubJay.Functional.Json.csproj", "{DE69C735-60E8-4414-B1CB-9F0BBBEE0755}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScrubJay.Functional.Asp", "ScrubJay.Functional.Asp\ScrubJay.Functional.Asp.csproj", "{62863911-FB94-42DF-B292-EE1294640D81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +22,13 @@ Global
 		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B94BC6CB-25C5-46FF-890D-AC71F969FF5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE69C735-60E8-4414-B1CB-9F0BBBEE0755}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE69C735-60E8-4414-B1CB-9F0BBBEE0755}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE69C735-60E8-4414-B1CB-9F0BBBEE0755}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE69C735-60E8-4414-B1CB-9F0BBBEE0755}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62863911-FB94-42DF-B292-EE1294640D81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62863911-FB94-42DF-B292-EE1294640D81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62863911-FB94-42DF-B292-EE1294640D81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62863911-FB94-42DF-B292-EE1294640D81}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

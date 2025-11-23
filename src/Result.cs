@@ -11,7 +11,7 @@ namespace ScrubJay.Functional;
 
 [PublicAPI]
 [StructLayout(LayoutKind.Auto)]
-public readonly partial struct Result :
+public readonly struct Result :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result, Result, bool>,
 #endif

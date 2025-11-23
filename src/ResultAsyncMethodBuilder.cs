@@ -1,8 +1,10 @@
 ﻿namespace ScrubJay.Functional;
 
 [PublicAPI]
+[StructLayout(LayoutKind.Auto)]
 public struct ResultAsyncMethodBuilder<T>
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ResultAsyncMethodBuilder<T> Create() => new();
 
     private IAsyncStateMachine? _stateMachine;
@@ -35,33 +37,41 @@ public struct ResultAsyncMethodBuilder<T>
         }
     }
 
-    public void Start<TStateMachine>(ref TStateMachine stateMachine)
-        where TStateMachine : IAsyncStateMachine
+    public void Start<SM>(ref SM stateMachine)
+        where SM : IAsyncStateMachine
     {
+        // We need to store this statemachine
+        // so we can call MoveNext on it later
+        // in order to 'await' anything before us
+        _stateMachine = stateMachine;
+        stateMachine.SetStateMachine(_stateMachine);
+        stateMachine.MoveNext();
+        /*
         if (_stateMachine is null)
         {
             _stateMachine = stateMachine; // deref
             _stateMachine.SetStateMachine(_stateMachine);
         }
 
-#if NETFRAMEWORK || NETSTANDARD
+//#if NETFRAMEWORK || NETSTANDARD
         stateMachine.MoveNext();
-#else
-        ExecutionContext? prevExecCtx = Thread.CurrentThread.ExecutionContext;
-        SynchronizationContext? prevSyncCtx = SynchronizationContext.Current;
-
-        try
-        {
-            stateMachine.MoveNext();
-        }
-        finally
-        {
-            if (prevSyncCtx != null && prevSyncCtx != SynchronizationContext.Current)
-                SynchronizationContext.SetSynchronizationContext(prevSyncCtx);
-            if (prevExecCtx != null && prevExecCtx != Thread.CurrentThread.ExecutionContext)
-                ExecutionContext.Restore(prevExecCtx);
-        }
-#endif
+// #else
+//         ExecutionContext? prevExecCtx = Thread.CurrentThread.ExecutionContext;
+//         SynchronizationContext? prevSyncCtx = SynchronizationContext.Current;
+//
+//         try
+//         {
+//             stateMachine.MoveNext();
+//         }
+//         finally
+//         {
+//             if (prevSyncCtx != null && prevSyncCtx != SynchronizationContext.Current)
+//                 SynchronizationContext.SetSynchronizationContext(prevSyncCtx);
+//             if (prevExecCtx != null && prevExecCtx != Thread.CurrentThread.ExecutionContext)
+//                 ExecutionContext.Restore(prevExecCtx);
+//         }
+// #endif
+*/
     }
 
     public void SetResult(T value)
@@ -74,12 +84,23 @@ public struct ResultAsyncMethodBuilder<T>
         _result = Result<T>.Error(exception);
     }
 
-    public void AwaitOnCompleted<TAwaiter, TStateMachine>(
-        ref TAwaiter awaiter,
-        ref TStateMachine stateMachine)
-        where TAwaiter : INotifyCompletion
-        where TStateMachine : IAsyncStateMachine
+    private Action CreateCompletionAction<SM>(
+        ref SM stateMachine)
+        where SM : IAsyncStateMachine
     {
+        var boxedStateMachine = stateMachine;
+        return boxedStateMachine.MoveNext;
+    }
+    
+    public void AwaitOnCompleted<A, SM>(
+        ref A awaiter,
+        ref SM stateMachine)
+        where A : INotifyCompletion
+        where SM : IAsyncStateMachine
+    {
+        var completion = CreateCompletionAction<SM>(ref stateMachine);
+        awaiter.OnCompleted(completion);
+        /*
         Action continuation;
 
         if (_stateMachine is null)
@@ -92,14 +113,19 @@ public struct ResultAsyncMethodBuilder<T>
         }
 
         awaiter.OnCompleted(continuation);
+        */
     }
 
-    public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
-        ref TAwaiter awaiter,
-        ref TStateMachine stateMachine)
-        where TAwaiter : ICriticalNotifyCompletion
-        where TStateMachine : IAsyncStateMachine
+    public void AwaitUnsafeOnCompleted<A, SM>(
+        ref A awaiter,
+        ref SM stateMachine)
+        where A : ICriticalNotifyCompletion
+        where SM : IAsyncStateMachine
     {
+        var completion = CreateCompletionAction<SM>(ref stateMachine);
+        awaiter.OnCompleted(completion);
+        /*
+
         Action continuation;
 
         if (_stateMachine is null)
@@ -112,5 +138,6 @@ public struct ResultAsyncMethodBuilder<T>
         }
 
         awaiter.UnsafeOnCompleted(continuation);
+        */
     }
 }

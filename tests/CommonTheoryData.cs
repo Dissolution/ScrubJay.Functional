@@ -103,4 +103,41 @@ public static class CommonTheoryData
         _2dStringArray[1, 0] = "147";
         _2dStringArray[1, 1] = null;
     }
+    
+    public static MiscTheoryData TestResultTs { get; } = new MiscTheoryData()
+    {
+        Result<byte>.Ok(147),
+        Result<string>.Ok("TRJ"),
+        Result<Type?>.Ok(typeof(Unit)),
+        Result<Type?>.Ok(null),
+        Result<int?>.Ok(147),
+        Result<int?>.Ok(null),
+        Result<byte>.Error(new InvalidOperationException()),
+        Result<string>.Error(new InvalidOperationException()),
+        Result<Type?>.Error(new InvalidOperationException()),
+        Result<int?>.Error(new InvalidOperationException()),
+        Result<Unit>.Ok(default),
+        Result<Unit>.Error(default!),
+        Result<Exception>.Ok(new Exception()),
+        Result<Exception>.Error(new Exception()),
+    };
+
+    public static MiscTheoryData TestOkValues { get; } = new MiscTheoryData()
+    {
+        (byte)147,
+        (string)"TRJ",
+        typeof(Unit),
+        (int?)null,
+        (int?)13,
+        Unit.Default,
+        new Exception(),
+        new List<Guid>(),
+    };
+    
+    public static MiscTheoryData TestExceptions { get; } = new MiscTheoryData()
+    {
+        new Exception(),
+        new InvalidOperationException("nope"),
+        new ArgumentOutOfRangeException("arg", 147, "nope II"),
+    };
 }

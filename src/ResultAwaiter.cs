@@ -1,8 +1,16 @@
 ﻿namespace ScrubJay.Functional;
 
+/// <summary>
+/// 
+/// </summary>
+/// <typeparam name="T"></typeparam>
+/// <remarks>
+/// This struct <b>cannot</b> be made <c>readonly</c>
+/// </remarks>
 [PublicAPI]
-public struct ResultAwaiter<T> :
-    ICriticalNotifyCompletion,
+[StructLayout(LayoutKind.Auto)]
+public struct ResultAwaiter<T> : 
+    //ICriticalNotifyCompletion,
     INotifyCompletion
 {
     private readonly Result<T> _result;
@@ -12,17 +20,26 @@ public struct ResultAwaiter<T> :
         _result = result;
     }
 
-    public bool IsCompleted => true;
+    // Result doesn't do any actual work itself, so it is always 'completed'
+    public readonly bool IsCompleted => true;
 
-    public T GetResult() => _result.OkOrThrow();
+    // This returns the Ok part of the Result back to the caller
+    // and throwing an Exception otherwise is _expected_ behavior
+    // as the compiler will package that into another Result<T>
+    public readonly T GetResult()
+    {
+        return _result.OkOrThrow();
+    }
 
-    public void OnCompleted(Action continuation)
+    // must call the continuation or this will block forever
+    public readonly void OnCompleted(Action continuation)
     {
         continuation();
     }
-
-    public void UnsafeOnCompleted(Action continuation)
-    {
-        continuation();
-    }
+    //
+    // // must call the continuation or this will block forever
+    // public void UnsafeOnCompleted(Action continuation)
+    // {
+    //     continuation();
+    // }
 }

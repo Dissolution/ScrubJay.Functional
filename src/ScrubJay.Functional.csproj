@@ -59,6 +59,11 @@
         <Using Include="JetBrains.Annotations"/>
         <Using Include="ScrubJay.Functional.Prelude" Static="true"/>
     </ItemGroup>
+
+    <!-- Expose our internals to Tests -->
+    <ItemGroup>
+        <InternalsVisibleTo Include="ScrubJay.Functional.Tests"/>
+    </ItemGroup>
     
     <ItemGroup>
       <PackageReference Include="JetBrains.Annotations" Version="2025.2.2">

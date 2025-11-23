@@ -38,19 +38,21 @@ public readonly struct Result<T> :
 #if NET7_0_OR_GREATER
     IEqualityOperators<Result<T>, Result<T>, bool>,
     IEqualityOperators<Result<T>, T, bool>,
-    IEqualityOperators<Result<T>, Exception, bool>,
+    // IEqualityOperators<Result<T>, Exception, bool>,
     IComparisonOperators<Result<T>, Result<T>, bool>,
     IComparisonOperators<Result<T>, T, bool>,
 #endif
     IEquatable<Result<T>>,
     IEquatable<T>,
-    IEquatable<Exception>,
+    // IEquatable<Exception>,
     IComparable<Result<T>>,
     IComparable<T>,
     IEnumerable<T>,
-    IFormattable
+    IFormattable,
+    ISpanParsable<Result<T>>,
+    IParsable<Result<T>>
 {
-    #region Operators
+#region Operators
 
     public static implicit operator bool(Result<T> result) => result._error is null;
 
@@ -59,9 +61,14 @@ public readonly struct Result<T> :
 
     public static implicit operator Result<T>(T value) => Ok(value);
     public static implicit operator Result<T>(Exception ex) => Error(ex);
-
     public static implicit operator Result<T>(IMPL.Ok<T> ok) => Ok(ok.Value);
     public static implicit operator Result<T>(IMPL.Error<Exception> error) => Error(error.Value);
+
+    // returns true if true
+    public static bool operator true(Result<T> result) => result._error is null;
+
+    // returns true if false
+    public static bool operator false(Result<T> result) => result._error is not null;
 
     public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
     public static bool operator !=(Result<T> left, Result<T> right) => !left.Equals(right);
@@ -79,8 +86,24 @@ public readonly struct Result<T> :
     public static bool operator <(Result<T> left, T right) => left.CompareTo(right) < 0;
     public static bool operator <=(Result<T> left, T right) => left.CompareTo(right) <= 0;
 
-    #endregion
+#endregion
 
+    public static Result<T> Parse(string s, IFormatProvider? provider)
+    {
+        throw new NotImplementedException();
+    }
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out Result<T> result)
+    {
+        throw new NotImplementedException();
+    }
+    public static Result<T> Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    {
+        throw new NotImplementedException();
+    }
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Result<T> result)
+    {
+        throw new NotImplementedException();
+    }
 
     /// <summary>
     /// Creates an Ok <see cref="Result{T}"/>
@@ -94,13 +117,31 @@ public readonly struct Result<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Error(Exception ex) => new Result<T>(default, ex ?? new Exception());
 
+    
+    
+    
+    
+    
+    
+    
+    
     // minimal fields:   `_error is null ? Ok : Error`
 
     // possible ok value
-    private readonly T? _value;
+#if DEBUG
+    internal
+#else
+    private
+#endif
+        readonly T? _value;
 
     // possible error
-    private readonly Exception? _error;
+#if DEBUG
+    internal
+#else
+    private
+#endif
+        readonly Exception? _error;
 
     /// <summary>
     /// 
@@ -117,12 +158,12 @@ public readonly struct Result<T> :
         _error = error;
     }
 
-
-    #region Ok
+#region Ok
 
     /// <summary>
     /// Is this an Ok <see cref="Result{T}"/>?
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOk() => _error is null;
 
     /// <summary>
@@ -135,6 +176,7 @@ public readonly struct Result<T> :
     /// <returns>
     /// <c>true</c> if this is an Ok <see cref="Result{T}"/>; otherwise <c>false</c>.
     /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOk([MaybeNullWhen(false)] out T value)
     {
         value = _value;
@@ -155,6 +197,7 @@ public readonly struct Result<T> :
     /// <returns>
     /// <c>true</c> if this is an Ok <see cref="Result{T}"/>; otherwise <c>false</c>.
     /// </returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsOk([MaybeNullWhen(false)] out T value, [NotNullWhen(false)] out Exception? error)
     {
         value = _value;
@@ -195,19 +238,21 @@ public readonly struct Result<T> :
         throw _error;
     }
 
-    #endregion
+#endregion
 
-    #region Error
+#region Error
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError() => _error is not null;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError([NotNullWhen(true)] out Exception? error)
     {
         error = _error;
         return error is not null;
     }
 
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError([NotNullWhen(true)] out Exception? error, [MaybeNullWhen(true)] out T ok)
     {
         error = _error;
@@ -242,9 +287,9 @@ public readonly struct Result<T> :
         }
     }
 
-    #endregion
+#endregion
 
-    #region Match
+#region Match
 
     public void Match(Action<T> onOk, Action<Exception> onError)
     {
@@ -274,7 +319,7 @@ public readonly struct Result<T> :
         }
     }
 
-    #endregion
+#endregion
 
     public Option<T> AsOption()
     {
@@ -288,7 +333,7 @@ public readonly struct Result<T> :
         }
     }
 
-    #region Comparison
+#region Comparison
 
     public int CompareTo(Result<T> other)
     {
@@ -326,9 +371,9 @@ public readonly struct Result<T> :
         return 1; // Error < Ok
     }
 
-    #endregion
+#endregion
 
-    #region Equality
+#region Equality
 
     public bool Equals(Result<T> other)
     {
@@ -376,6 +421,8 @@ public readonly struct Result<T> :
         return false;
     }
 
+    public bool Equals(bool isOk) => _error is null;
+
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj switch
         {
@@ -389,6 +436,8 @@ public readonly struct Result<T> :
 
     public override int GetHashCode()
     {
+#if NETFRAMEWORK || NETSTANDARD2_0
+
         if (_error is null)
         {
             if (_value is not null)
@@ -407,11 +456,14 @@ public readonly struct Result<T> :
 
             return typeof(Exception).GetHashCode();
         }
+#else
+        return HashCode.Combine(_value, _error);
+#endif
     }
 
-    #endregion
+#endregion
 
-    #region ToString / TryFormat
+#region To String
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
@@ -432,7 +484,7 @@ public readonly struct Result<T> :
         }
         else
         {
-            return $"Result<{typeof(T)}>.Error({_error:@})";
+            return $"Result<{typeof(T)}>.Error({_error})";
         }
     }
 
@@ -448,9 +500,68 @@ public readonly struct Result<T> :
         }
     }
 
-    #endregion
+#endregion
 
-    #region Linq
+
+#region IEnumerable
+
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
+    [MustDisposeResource(false)]
+    public ResultEnumerator GetEnumerator() => new ResultEnumerator(this);
+
+    [PublicAPI]
+    [MustDisposeResource(false)]
+    public struct ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
+    {
+        private readonly Result<T> _result;
+        private bool _canYield;
+
+        object? IEnumerator.Current => _result.OkOrThrow();
+
+        public T Current
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _result.OkOrThrow();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ResultEnumerator(Result<T> result)
+        {
+            _result = result;
+            _canYield = result._error is null;
+        }
+
+        void IDisposable.Dispose()
+        {
+            /* Do Nothing */
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool MoveNext()
+        {
+            if (!_canYield)
+            {
+                return false;
+            }
+            else
+            {
+                _canYield = false;
+                return true;
+            }
+        }
+
+        public void Reset()
+        {
+            _canYield = _result._error is null;
+        }
+    }
+
+#endregion
+
+#region Linq
 
     public Result<N> Select<N>(Func<T, N> selector)
     {
@@ -497,81 +608,26 @@ public readonly struct Result<T> :
 
     public Result<N> SelectMany<K, N>(Func<T, Result<K>> keySelector, Func<T, K, N> newSelector)
     {
-        if (IsOk(out var value, out var error))
+        if (_error is null)
         {
-            var keyResult = keySelector(value!);
-            if (keyResult.IsOk(out var key, out error))
+            var keySelectResult = keySelector(_value!);
+            if (keySelectResult._error is null)
             {
-                var newSelect = newSelector(value, key);
-                return Result<N>.Ok(newSelect);
+                var newSelectResult = newSelector(_value!, keySelectResult._value!);
+                return Result<N>.Ok(newSelectResult);
             }
-            else
-            {
-                return error;
-            }
+
+            return Result<N>.Error(keySelectResult._error);
         }
-        else
-        {
-            return error;
-        }
+
+        return Result<N>.Error(_error);
     }
 
-    #endregion
-
-    #region IEnumerable
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
-
-    [MustDisposeResource(false)]
-    public ResultEnumerator GetEnumerator() => new ResultEnumerator(this);
-
-    [PublicAPI]
-    [MustDisposeResource(false)]
-    public struct ResultEnumerator : IEnumerator<T>, IEnumerator, IDisposable
-    {
-        private readonly Result<T> _result;
-        private bool _canYield;
-
-        object? IEnumerator.Current => _result.OkOrThrow();
-
-        public T Current => _result.OkOrThrow();
-
-        public ResultEnumerator(Result<T> result)
-        {
-            _result = result;
-            _canYield = result._error is null;
-        }
-
-        void IDisposable.Dispose()
-        {
-            /* Do Nothing */
-        }
-
-        public bool MoveNext()
-        {
-            if (!_canYield)
-            {
-                return false;
-            }
-            else
-            {
-                _canYield = false;
-                return true;
-            }
-        }
-
-        public void Reset()
-        {
-            _canYield = _result._error is null;
-        }
-    }
-
-    #endregion
+#endregion
 
     /// <summary>
-    /// Support for <c>await</c> syntax in order to support early return from <c>async</c> methods
+    /// Support for using <see cref="Result{T}"/> with <c>await</c> syntax;<br/>
+    /// this supports early return from <c>async</c> methods!
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public ResultAwaiter<T> GetAwaiter() => new(this);
