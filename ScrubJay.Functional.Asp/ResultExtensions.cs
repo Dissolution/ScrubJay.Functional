@@ -19,15 +19,15 @@ public static class ResultExtensions
             return ErrorProblemDetailsHelper.ToActionResult(error);
         }
 
-        public IResult ToIResult()
-        {
-            if (!result.IsError(out var error))
-            {
-                return Results.Ok();
-            }
-
-            return ErrorProblemDetailsHelper.ToIResult(error);
-        }
+        // public IResult ToIResult()
+        // {
+        //     if (!result.IsError(out var error))
+        //     {
+        //         return Results.Ok();
+        //     }
+        //
+        //     return ErrorProblemDetailsHelper.ToIResult(error);
+        // }
     }
 
     extension<T>(Result<T> result)

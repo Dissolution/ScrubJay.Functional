@@ -487,7 +487,7 @@ public readonly struct Result<T, E> :
                 str = _value?.ToString();
             }
 
-            return $"Result<{typeof(T)}, {typeof(E)}>.Ok({str})";
+            return $"Ok({str})";
         }
         else
         {
@@ -500,7 +500,7 @@ public readonly struct Result<T, E> :
                 str = _error?.ToString();
             }
 
-            return $"Result<{typeof(T)}, {typeof(E)}>.Error({str})";
+            return $"Error({str})";
         }
     }
 
@@ -508,11 +508,11 @@ public readonly struct Result<T, E> :
     {
         if (_isOk)
         {
-            return $"Result<{typeof(T)}, {typeof(E)}>.Ok({_value})";
+            return $"Ok({_value})";
         }
         else
         {
-            return $"Result<{typeof(T)}, {typeof(E)}>.Error({_error})";
+            return $"Error({_error})";
         }
     }
 

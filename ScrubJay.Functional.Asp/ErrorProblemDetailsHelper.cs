@@ -1,9 +1,6 @@
 using System.Collections.Concurrent;
-using System.Net;
-using System.Runtime.CompilerServices;
 using System.Security;
 using System.Security.Authentication;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,7 +50,7 @@ public static class ErrorProblemDetailsHelper
     public static void AddProblemDetailsFactory<X>(Func<X, ProblemDetails> factory)
         where X : Exception
     {
-        _exceptionTypeProblemDetailsFactoryMap[typeof(X)] = factory;
+        _exceptionTypeProblemDetailsFactoryMap[typeof(X)] = (Func<Exception, ProblemDetails>)factory;
     }
 
     public static ActionResult ToActionResult(Exception exception)
@@ -77,21 +74,21 @@ public static class ErrorProblemDetailsHelper
         return objectResult;
     }
 
-    public static IResult ToIResult(Exception exception)
-    {
-        var exceptionType = exception.GetType();
-        ProblemDetails problemDetails;
-        
-        if (_exceptionTypeProblemDetailsFactoryMap.TryGetValue(exceptionType, out var factory))
-        {
-            problemDetails = factory(exception);
-        }
-        else
-        {
-            problemDetails = ToProblemDetails(exception);
-        }
-
-        var problem = Results.Problem(problemDetails);
-        return problem;
-    }
+    // public static IResult ToIResult(Exception exception)
+    // {
+    //     var exceptionType = exception.GetType();
+    //     ProblemDetails problemDetails;
+    //     
+    //     if (_exceptionTypeProblemDetailsFactoryMap.TryGetValue(exceptionType, out var factory))
+    //     {
+    //         problemDetails = factory(exception);
+    //     }
+    //     else
+    //     {
+    //         problemDetails = ToProblemDetails(exception);
+    //     }
+    //
+    //     var problem = Results.Problem(problemDetails);
+    //     return problem;
+    // }
 }

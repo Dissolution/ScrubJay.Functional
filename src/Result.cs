@@ -2,8 +2,6 @@
 // Do not declare static methods on generic types
 // Do not catch Exception
 
-using System.Diagnostics;
-
 #pragma warning disable CA1715, CA1000, CA1031
 
 
@@ -169,10 +167,10 @@ public readonly struct Result :
     {
         if (_error is null)
         {
-            return "Result.Ok";
+            return "Ok";
         }
 
-        return $"Result.Error({_error})";
+        return $"Error({_error})";
     }
 
     #endregion

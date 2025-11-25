@@ -20,6 +20,13 @@ namespace ScrubJay.Functional;
 [PublicAPI]
 public static class StringifyExtensions
 {
+    internal static string? AsFormatString(this ReadOnlySpan<char> format)
+    {
+        if (format.IsEmpty)
+            return null;
+        return format.ToString();
+    }
+    
 #if NET9_0_OR_GREATER
 
     // use a static class to contain the delegates!
@@ -147,22 +154,6 @@ public static class StringifyExtensions
     public static string Stringify<T>(this T? value)
     {
         return value?.ToString() ?? string.Empty;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string Stringify<T>(this T? value, string? format, IFormatProvider? provider = null)
-    {
-        if (value is null)
-        {
-            return string.Empty;
-        }
-
-        if (value is IFormattable)
-        {
-            return ((IFormattable)value).ToString(format, provider);
-        }
-
-        return value.ToString() ?? string.Empty;
     }
 
 #endif

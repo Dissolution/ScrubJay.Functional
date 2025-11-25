@@ -27,9 +27,6 @@ namespace ScrubJay.Functional;
 /// <seealso href="https://en.wikipedia.org/wiki/Result_type">Result Type on Wikipedia</seealso>
 /// <seealso href="https://doc.rust-lang.org/std/result/enum.Result.html">Rust's Result Type</seealso>
 [PublicAPI]
-#if !NETSTANDARD2_0
-[AsyncMethodBuilder(typeof(ResultAsyncMethodBuilder<>))]
-#endif
 [StructLayout(LayoutKind.Auto)]
 public readonly struct Result<T> :
     /* All commented out interfaces are implemented, but cannot be declared per CS0695:
@@ -48,26 +45,49 @@ public readonly struct Result<T> :
     IComparable<Result<T>>,
     IComparable<T>,
     IEnumerable<T>,
-    IFormattable,
-    ISpanParsable<Result<T>>,
-    IParsable<Result<T>>
+    IFormattable
 {
 #region Operators
 
+    /// <summary>
+    /// Implicitly convert a <see cref="Result{T}"/> into a <c>bool</c> (Ok -> <c>true</c>, Error -> <c>false</c>) 
+    /// </summary>
     public static implicit operator bool(Result<T> result) => result._error is null;
 
+    /// <summary>
+    /// Implicitly convert a <see cref="Result{T}"/> into a <see cref="Result"/> (Ok(T) -> Ok, Error -> Error) 
+    /// </summary>
     public static implicit operator Result(Result<T> result) =>
         result.IsError(out var error) ? Result.Error(error) : Result.Ok;
 
+    /// <summary>
+    /// Implicitly convert a <typeparamref name="T"/> <paramref name="value"/> into an <see cref="Ok"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(T value) => Ok(value);
+
+    /// <summary>
+    /// Implicitly convert an <see cref="Exception"/> into an <see cref="Error"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(Exception ex) => Error(ex);
+
+    /// <summary>
+    /// Implicitly convert an <see cref="IMPL.Ok{T}"/> into an <see cref="Ok"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(IMPL.Ok<T> ok) => Ok(ok.Value);
+
+    /// <summary>
+    /// Implicitly convert an <see cref="IMPL.Error{T}"/> into an <see cref="Error"/> <see cref="Result{T}"/>
+    /// </summary>
     public static implicit operator Result<T>(IMPL.Error<Exception> error) => Error(error.Value);
 
-    // returns true if true
+    /// <summary>
+    /// <see cref="Result{T}"/> evaluates to <c>true</c> if it is <see cref="Ok"/>
+    /// </summary>
     public static bool operator true(Result<T> result) => result._error is null;
 
-    // returns true if false
+    /// <summary>
+    /// <see cref="Result{T}"/> evaluates to <c>false</c> if it is <see cref="Error"/>
+    /// </summary>
     public static bool operator false(Result<T> result) => result._error is not null;
 
     public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
@@ -88,23 +108,6 @@ public readonly struct Result<T> :
 
 #endregion
 
-    public static Result<T> Parse(string s, IFormatProvider? provider)
-    {
-        throw new NotImplementedException();
-    }
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out Result<T> result)
-    {
-        throw new NotImplementedException();
-    }
-    public static Result<T> Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
-    {
-        throw new NotImplementedException();
-    }
-    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Result<T> result)
-    {
-        throw new NotImplementedException();
-    }
-
     /// <summary>
     /// Creates an Ok <see cref="Result{T}"/>
     /// </summary>
@@ -117,14 +120,7 @@ public readonly struct Result<T> :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Result<T> Error(Exception ex) => new Result<T>(default, ex ?? new Exception());
 
-    
-    
-    
-    
-    
-    
-    
-    
+
     // minimal fields:   `_error is null ? Ok : Error`
 
     // possible ok value
@@ -437,7 +433,6 @@ public readonly struct Result<T> :
     public override int GetHashCode()
     {
 #if NETFRAMEWORK || NETSTANDARD2_0
-
         if (_error is null)
         {
             if (_value is not null)
@@ -463,7 +458,19 @@ public readonly struct Result<T> :
 
 #endregion
 
-#region To String
+#region Formatting
+
+    public override string ToString()
+    {
+        if (_error is null)
+        {
+            return $"Ok({_value})";
+        }
+        else
+        {
+            return $"Error({_error})";
+        }
+    }
 
     public string ToString(string? format, IFormatProvider? provider = null)
     {
@@ -480,23 +487,11 @@ public readonly struct Result<T> :
                 str = _value?.ToString();
             }
 
-            return $"Result<{typeof(T)}>.Ok({str})";
+            return $"Ok({str})";
         }
         else
         {
-            return $"Result<{typeof(T)}>.Error({_error})";
-        }
-    }
-
-    public override string ToString()
-    {
-        if (_error is null)
-        {
-            return $"Result<{typeof(T)}>.Ok({_value})";
-        }
-        else
-        {
-            return $"Result<{typeof(T)}>.Error({_error})";
+            return $"Error({_error})";
         }
     }
 
@@ -624,11 +619,4 @@ public readonly struct Result<T> :
     }
 
 #endregion
-
-    /// <summary>
-    /// Support for using <see cref="Result{T}"/> with <c>await</c> syntax;<br/>
-    /// this supports early return from <c>async</c> methods!
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ResultAwaiter<T> GetAwaiter() => new(this);
 }

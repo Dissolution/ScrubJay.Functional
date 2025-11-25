@@ -50,15 +50,4 @@ public static class Extensions
             }
         }
     }
-
-    extension<T>(Nullable<T> nullable)
-        where T : struct
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetValue([NotNullWhen(true)] out T? value)
-        {
-            value = nullable.GetValueOrDefault();
-            return nullable.HasValue;
-        }
-    }
 }

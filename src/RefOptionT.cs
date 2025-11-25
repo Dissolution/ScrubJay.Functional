@@ -37,6 +37,13 @@ public readonly ref struct RefOption<T>
 
     public static RefOption<T> Some(T value) => new(value);
 
+    public static RefOption<T> NotNull(T? value)
+    {
+        if (value is null)
+            return None;
+        return Some(value);
+    }
+    
     // Is this Option.Some?
     // if someone does default(RefOption), this will be false, so default(RefOption) == None
     private readonly bool _isSome;
@@ -301,9 +308,9 @@ public readonly ref struct RefOption<T>
     {
         if (_isSome)
         {
-            return $"RefOption<{typeof(T)}>.Some({_value.Stringify()})";
+            return $"Some({_value.Stringify()})";
         }
 
-        return $"RefOption<{typeof(T)}>.None";
+        return nameof(None);
     }
 }

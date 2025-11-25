@@ -2,8 +2,6 @@
 // Do not declare static methods on generic types
 // Do not catch Exception
 
-using System.Diagnostics;
-
 #pragma warning disable CA1715, CA1000, CA1031
 
 
@@ -36,6 +34,7 @@ public readonly ref struct RefResult<T>
 #region Operators
 
     public static implicit operator bool(in RefResult<T> refResult) => refResult._isOk;
+    public static implicit operator RefResult<T>(T value) => Ok(value);
     public static implicit operator RefResult<T>(Exception ex) => Error(ex);
     public static implicit operator RefResult<T>(IMPL.Ok<T> ok) => Ok(ok.Value);
     public static implicit operator RefResult<T>(IMPL.Error<Exception> error) => Error(error.Value);
@@ -382,11 +381,11 @@ public readonly ref struct RefResult<T>
     {
         if (_isOk)
         {
-            return $"RefResult<{typeof(T)}>.Ok({_value.Stringify()})";
+            return $"Ok({_value.Stringify()})";
         }
         else
         {
-            return $"RefResult<{typeof(T)}>.Error({_error.Stringify()})";
+            return $"Error({_error.Stringify()})";
         }
     }
 }

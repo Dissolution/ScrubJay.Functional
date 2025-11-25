@@ -5,6 +5,7 @@ public static class ResultExtensions
 {
     extension(Result)
     {
+#if NET7_0_OR_GREATER
         public static Result<T> Parse<T>(
             scoped ReadOnlySpan<char> text,
             IFormatProvider? provider = null)
@@ -24,8 +25,8 @@ public static class ResultExtensions
                 return value;
             return new ArgumentException(nameof(str), $"Could not parse \"{str}\" to a {typeof(T)} value");
         }
-        
-        
+#endif
+
         /// <summary>
         /// Try to invoke an <see cref="Action"/>
         /// </summary>
