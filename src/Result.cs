@@ -30,8 +30,7 @@ public readonly struct Result :
 
     public static readonly Result Ok = new Result(null);
     public static Result Error(Exception ex) => new Result(ex);
-
-    // Unlike Result<T> and Result<T,E>, default(Result) == true
+    
     private readonly Exception? _error;
 
     private Result(Exception? error)

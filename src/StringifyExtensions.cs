@@ -1,5 +1,3 @@
-
-
 using System.Reflection;
 using System.Reflection.Emit;
 #if NET9_0_OR_GREATER
@@ -12,7 +10,7 @@ namespace ScrubJay.Functional;
 /// Extensions that provide a <see cref="Stringify{T}(T?)"/> operation on <i>any</i> type.
 /// </summary>
 /// <remarks>
-/// This is vital when interacting with <c>.NET 9.0+</c>'s feature <c>allows ref struct</c>.<br/>
+/// This is vital when interacting with <c>.NET 9.0+</c>'s generic type 'constraint' <c>allows ref struct</c>.<br/>
 /// You cannot call <see cref="object.ToString()"/> on a generic value constrained with <c>allows ref struct</c>.<br/>
 /// All non-<c>ref struct</c> values and many <c>ref struct</c>s provide their own <c>ToString()</c> implementation,<br/>
 /// so this class creates custom delegates to call those methods (with a fallback for any type that doesn't have one).
@@ -26,7 +24,7 @@ public static class StringifyExtensions
             return null;
         return format.ToString();
     }
-    
+
 #if NET9_0_OR_GREATER
 
     // use a static class to contain the delegates!
@@ -34,20 +32,20 @@ public static class StringifyExtensions
         where T : allows ref struct
     {
         private static readonly Func<T, string> _fallbackToString = _ => $"{typeof(T)} instance";
-        
-        public static readonly Func<T, string> Stringify = CreateToStringDelegate();
+
+        public static readonly Func<T, string> ToStringFunc = CreateToStringDelegate();
 
         private static MethodInfo? FindToStringMethod(Type type, BF flags)
         {
             var toStringMethod = type
                 .GetMethods(flags)
                 .Where(static method => method.Name == nameof(object.ToString) &&
-                                        method.ReturnType == typeof(string) &&
-                                        method.GetParameters().Length == 0)
+                    method.ReturnType == typeof(string) &&
+                    method.GetParameters().Length == 0)
                 .FirstOrDefault();
             return toStringMethod;
         }
-        
+
         private static Func<T, string> CreateToStringDelegate()
         {
             Type instanceType = typeof(T);
@@ -57,12 +55,14 @@ public static class StringifyExtensions
             if (instanceType.IsEnum)
             {
                 // Enum instances do not have a special ToString, they use the common Enum.ToString()
-                toStringMethod = FindToStringMethod(typeof(Enum), BF.Public | BF.NonPublic | BF.Instance | BF.DeclaredOnly);
+                toStringMethod =
+                    FindToStringMethod(typeof(Enum), BF.Public | BF.NonPublic | BF.Instance | BF.DeclaredOnly);
             }
             else
             {
                 // For all other types, first look for an instance method declared exactly on that type
-                toStringMethod = FindToStringMethod(instanceType, BF.Public | BF.NonPublic | BF.Instance | BF.DeclaredOnly);
+                toStringMethod =
+                    FindToStringMethod(instanceType, BF.Public | BF.NonPublic | BF.Instance | BF.DeclaredOnly);
 
                 // If this is a non-value, non-ref type, we can also scan higher
                 if (toStringMethod is null && (!instanceType.IsByRef && !instanceType.IsValueType))
@@ -137,7 +137,17 @@ public static class StringifyExtensions
             gen.Emit(OpCodes.Ret);
 
             // create the function
-            var func = dyn.CreateDelegate<Func<T, string>>();
+            Func<T, string> func;
+            try
+            {
+                func = dyn.CreateDelegate<Func<T, string>>();
+            }
+            catch (Exception)
+            {
+                // fallback
+                func = _fallbackToString;
+            }
+
             return func;
         }
     }
@@ -147,7 +157,7 @@ public static class StringifyExtensions
     {
         if (value is null)
             return string.Empty;
-        return ToStringDelegateCache<T>.Stringify(value);
+        return ToStringDelegateCache<T>.ToStringFunc(value);
     }
 #else
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

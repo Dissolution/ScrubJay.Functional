@@ -165,7 +165,7 @@ namespace System.Diagnostics
     /// and Exception.StackTrace
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Constructor | AttributeTargets.Struct, Inherited = false)]
-    public sealed class StackTraceHiddenAttribute : Attribute
+    internal sealed class StackTraceHiddenAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StackTraceHiddenAttribute"/> class.

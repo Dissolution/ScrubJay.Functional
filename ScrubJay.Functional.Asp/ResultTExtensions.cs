@@ -1,20 +1,28 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace ScrubJay.Functional.Asp;
 
 /// <summary>
-/// Extensions on <see cref="Result"/>
+/// Extensions on <see cref="Result{T}"/>
 /// </summary>
-public static class ResultExtensions
+public static class ResultTExtensions
 {
-    extension(Result result)
+    extension<T>(Result<T> result)
     {
+        /// <summary>
+        /// Converts a <see cref="Result{T}"/> into an <see cref="IActionResult"/>
+        /// </summary>
         public IActionResult ToIActionResult()
         {
-            if (!result.IsError(out var error))
+            if (result.IsOk(out var value, out var error))
             {
-                return new OkResult();
+                if (value is IStatusCodeActionResult iscar)
+                    return new StatusCodeResult(iscar.StatusCode ?? ProblemDetailsHelper.DefaultOkStatusCode);
+                if (value is IActionResult iar)
+                    return iar;
+                return new OkObjectResult(value);
             }
             else
             {
@@ -26,11 +34,13 @@ public static class ResultExtensions
             }
         }
         
-        public ActionResult ToActionResult()
+        public ActionResult<T> ToActionResult()
         {
-            if (!result.IsError(out var error))
+            if (result.IsOk(out var value, out var error))
             {
-                return new OkResult();
+                if (value is ActionResult<T> actionResult)
+                    return actionResult;
+                return new ActionResult<T>(value);
             }
             else
             {
@@ -41,12 +51,14 @@ public static class ResultExtensions
                 };
             }
         }
-
+        
         public IResult ToIResult()
         {
-            if (!result.IsError(out var error))
+            if (result.IsOk(out var value, out var error))
             {
-                return Results.Ok();
+                if (value is IResult ir)
+                    return ir;
+                return Results.Ok(value);
             }
             else
             {
@@ -54,6 +66,5 @@ public static class ResultExtensions
                 return Results.Problem(problem);
             }
         }
-
     }
 }

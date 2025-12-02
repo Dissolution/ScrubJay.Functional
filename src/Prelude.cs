@@ -20,7 +20,11 @@ namespace ScrubJay.Functional;
 [PublicAPI]
 public static class Prelude
 {
-    public static None None { get; } = None.Default;
+    public static None None
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => field;
+    } = None.Default;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Option<T> Some<T>(T value) => Option<T>.Some(value);
@@ -33,11 +37,11 @@ public static class Prelude
         => new Ok<T>(value);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Error<T> Error<T>(T error)
+    public static Error<E> Error<E>(E error)
 #if NET9_0_OR_GREATER
-        where T : allows ref struct
+        where E : allows ref struct
 #endif
-        => new Error<T>(error);
+        => new Error<E>(error);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Unit Unit() => default(Unit);
