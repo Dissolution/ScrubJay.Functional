@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Security;
 using System.Security.Authentication;
@@ -15,13 +14,9 @@ public enum StackTraceLevel
     Full,
 }
 
-
 public static class ProblemDetailsHelper
 {
     private static readonly Dictionary<Type, int> _exceptionStatusCodes;
-
-    private static readonly ConcurrentDictionary<Type, Func<Exception, ProblemDetails>>
-        _exceptionTypeProblemDetailsFactoryMap = [];
 
     public static int DefaultOkStatusCode { get; set; } = StatusCodes.Status200OK;
 
@@ -101,11 +96,6 @@ public static class ProblemDetailsHelper
             _ => null,
         };
     }
-
-    public static void ExtendProblemDetails(ProblemDetails problemDetails, Exception? exception)
-    {
-        
-    }
     
     public static ProblemDetails GetProblemDetails(Exception? exception)
     {
@@ -122,10 +112,6 @@ public static class ProblemDetailsHelper
                 Status = DefaultFailStatusCode,
             };
         }
-        else if (_exceptionTypeProblemDetailsFactoryMap.TryGetValue(exceptionType, out var factory))
-        {
-            problem = factory(exception);
-        }
         else
         {
             int statusCode = _exceptionStatusCodes.GetValueOrDefault(exceptionType, DefaultFailStatusCode);
@@ -136,12 +122,21 @@ public static class ProblemDetailsHelper
                 StackTraceLevel.Full => exception.StackTrace,
                 _ => null,
             };
+
+            string? instance = null;
+            if (!string.IsNullOrEmpty(exception.HelpLink) &&
+                Uri.TryCreate(exception.HelpLink, UriKind.Absolute, out var uri))
+            {
+                instance = uri.ToString();
+            }
+
             problem = new ProblemDetails
             {
                 Type = exceptionType.Name,
                 Title = exception.Message,
                 Detail = detail,
                 Status = statusCode,
+                Instance = instance,
             };
         }
 
@@ -150,20 +145,16 @@ public static class ProblemDetailsHelper
 
     public static ProblemDetails GetProblemDetails<E>(E? error)
     {
-        Type errorType = error?.GetType() ?? typeof(E);
-        ProblemDetails problem = new ProblemDetails
+        return error switch
         {
-            Type = errorType.Name,
-            Title = "Error",
-            Detail = error?.ToString() ?? "Unknown Error",
-            Status = DefaultFailStatusCode,
+            Problem problem => problem.ToProblemDetails(),
+            ProblemDetails details => details,
+            _ => new ProblemDetails
+            {
+                Title = "Error", 
+                Type = (error?.GetType() ?? typeof(E)).Name, 
+                Detail = error?.ToString(),
+            },
         };
-        return problem;
-    }
-    
-    public static void AddProblemDetailsFactory<X>(Func<X, ProblemDetails> factory)
-        where X : Exception
-    {
-        _exceptionTypeProblemDetailsFactoryMap[typeof(X)] = (Func<Exception, ProblemDetails>)factory;
     }
 }

@@ -43,19 +43,15 @@ public static class ControllerExtensions
             }
             else
             {
-                int? statusCode = ProblemDetailsHelper.GetHttpStatusCode(ex);
+                var problemDetails = ProblemDetailsHelper.GetProblemDetails(ex);
 
-                var problemDetails = controller.ProblemDetailsFactory
-                    .CreateProblemDetails(
-                        httpContext: controller.HttpContext,
-                        statusCode: statusCode,
-                        title: ex.Message ?? "<unknown error>",
-                        type: ex.GetType().Name,
-                        detail: ProblemDetailsHelper.GetStackTrace(ex));
-                return new ObjectResult(problemDetails)
-                {
-                    StatusCode = statusCode,
-                };
+                return controller.Problem(
+                    detail: problemDetails.Detail,
+                    instance: problemDetails.Instance,
+                    statusCode: problemDetails.Status,
+                    title: problemDetails.Title,
+                    type: problemDetails.Type,
+                    extensions: problemDetails.Extensions);
             }
         }
         
@@ -76,49 +72,20 @@ public static class ControllerExtensions
                 
                 if (error is ActionResult ar)
                     return ar;
-
-                ProblemDetails? problemDetails = null;
                 
-                if (error is Problem problem)
-                {
-                    var details = problem.ToProblemDetails();
-                    problemDetails = controller.ProblemDetailsFactory
-                        .CreateProblemDetails(
-                            httpContext: controller.HttpContext,
-                            statusCode: details.Status,
-                            title: details.Title,
-                            type: details.Type,
-                            detail: details.Detail);
-               
-                }
-                else if (error is ProblemDetails details)
-                {
-                    problemDetails = controller.ProblemDetailsFactory
-                        .CreateProblemDetails(
-                            httpContext: controller.HttpContext,
-                            statusCode: details.Status,
-                            title: details.Title,
-                            type: details.Type,
-                            detail: details.Detail);
-                }
-                else
-                {
-                    int? statusCode = ProblemDetailsHelper.DefaultFailStatusCode;
+                var problemDetails = ProblemDetailsHelper.GetProblemDetails<E>(error);
 
-                    problemDetails = controller.ProblemDetailsFactory
-                        .CreateProblemDetails(
-                            httpContext: controller.HttpContext,
-                            statusCode: statusCode,
-                            title: "Error",
-                            type: (error?.GetType() ?? typeof(E)).Name,
-                            detail: error?.ToString());
-                }
-                
-                return new ObjectResult(problemDetails)
-                {
-                    StatusCode = problemDetails.Status,
-                };
+                return controller.Problem(
+                    detail: problemDetails.Detail,
+                    instance: problemDetails.Instance,
+                    statusCode: problemDetails.Status,
+                    title: problemDetails.Title,
+                    type: problemDetails.Type,
+                    extensions: problemDetails.Extensions);
             }
         }
+        
+        
+        
     }
 }

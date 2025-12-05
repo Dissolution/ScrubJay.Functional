@@ -52,7 +52,7 @@ public readonly struct Result<T> :
     /// <summary>
     /// Implicitly convert a <see cref="Result{T}"/> into a <c>bool</c> (Ok -> <c>true</c>, Error -> <c>false</c>) 
     /// </summary>
-    public static implicit operator bool(Result<T> result) => result._error is null;
+    public static implicit operator bool(Result<T> result) => result._isOk;
 
     /// <summary>
     /// Implicitly convert a <see cref="Result{T}"/> into a <see cref="Result"/> (Ok(T) -> Ok, Error -> Error) 
@@ -83,12 +83,12 @@ public readonly struct Result<T> :
     /// <summary>
     /// <see cref="Result{T}"/> evaluates to <c>true</c> if it is <see cref="Ok"/>
     /// </summary>
-    public static bool operator true(Result<T> result) => result._error is null;
+    public static bool operator true(Result<T> result) => result._isOk;
 
     /// <summary>
     /// <see cref="Result{T}"/> evaluates to <c>false</c> if it is <see cref="Error"/>
     /// </summary>
-    public static bool operator false(Result<T> result) => result._error is not null;
+    public static bool operator false(Result<T> result) => !result._isOk;
 
     public static bool operator ==(Result<T> left, Result<T> right) => left.Equals(right);
     public static bool operator !=(Result<T> left, Result<T> right) => !left.Equals(right);
@@ -112,17 +112,23 @@ public readonly struct Result<T> :
     /// Creates an Ok <see cref="Result{T}"/>
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> Ok(T value) => new Result<T>(value, null);
+    public static Result<T> Ok(T value) => new Result<T>(true, value, null);
 
     /// <summary>
     /// Creates <see cref="Result{T}"/>.Error(<paramref name="ex"/>)
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Result<T> Error(Exception ex) => new Result<T>(default, ex ?? new Exception());
+    public static Result<T> Error(Exception? ex) => new Result<T>(false, default, ex ?? new InvalidOperationException());
 
-
-    // minimal fields:   `_error is null ? Ok : Error`
-
+    // is this ok or error?
+#if DEBUG
+    internal
+#else
+    private
+#endif
+        readonly bool _isOk;
+    
+    
     // possible ok value
 #if DEBUG
     internal
@@ -131,25 +137,21 @@ public readonly struct Result<T> :
 #endif
         readonly T? _value;
 
-    // possible error
+    // possible error exception
 #if DEBUG
     internal
 #else
     private
 #endif
         readonly Exception? _error;
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="error"></param>
+    
     /// <remarks>
     /// <see cref="Result{T}"/> may only be constructed with <see cref="Ok"/>, <see cref="Error"/>,
     /// or an implicit conversion from a <typeparamref name="T"/> or <see cref="Exception"/>.
     /// </remarks>
-    private Result(T? value, Exception? error)
+    private Result(bool isOk, T? value, Exception? error)
     {
+        _isOk = isOk;
         _value = value;
         _error = error;
     }
@@ -160,7 +162,7 @@ public readonly struct Result<T> :
     /// Is this an Ok <see cref="Result{T}"/>?
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsOk() => _error is null;
+    public bool IsOk() => _isOk;
 
     /// <summary>
     /// Is this an Ok <see cref="Result{T}"/>?
@@ -176,7 +178,7 @@ public readonly struct Result<T> :
     public bool IsOk([MaybeNullWhen(false)] out T value)
     {
         value = _value;
-        return _error is null;
+        return _isOk;
     }
 
     /// <summary>
@@ -198,40 +200,40 @@ public readonly struct Result<T> :
     {
         value = _value;
         error = _error;
-        return error is null;
+        return _isOk;
     }
 
     public bool IsOkAnd(Func<T, bool> okPredicate)
     {
-        return _error is null && okPredicate(_value!);
+        return _isOk && okPredicate(_value!);
     }
 
     public T OkOr(T fallback)
     {
-        if (_error is null)
+        if (_isOk)
             return _value!;
         return fallback;
     }
 
     public T OkOr(Func<T> getFallback)
     {
-        if (_error is null)
+        if (_isOk)
             return _value!;
         return getFallback();
     }
 
     public T? OkOrDefault()
     {
-        if (_error is null)
+        if (_isOk)
             return _value!;
         return default(T);
     }
 
     public T OkOrThrow()
     {
-        if (_error is null)
+        if (_isOk)
             return _value!;
-        throw _error;
+        throw _error!;
     }
 
 #endregion
@@ -239,13 +241,13 @@ public readonly struct Result<T> :
 #region Error
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsError() => _error is not null;
+    public bool IsError() => !_isOk;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsError([NotNullWhen(true)] out Exception? error)
     {
         error = _error;
-        return error is not null;
+        return !_isOk;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -253,33 +255,33 @@ public readonly struct Result<T> :
     {
         error = _error;
         ok = _value;
-        return error is not null;
+        return !_isOk;
     }
 
     public bool IsErrorAnd(Func<Exception, bool> errorPredicate)
     {
-        return _error is not null && errorPredicate(_error);
+        return !_isOk && errorPredicate(_error!);
     }
 
     public Exception ErrorOr(Exception fallback)
     {
-        if (_error is not null)
-            return _error;
+        if (!_isOk)
+            return _error!;
         return fallback;
     }
 
     public Exception ErrorOr(Func<Exception> getFallback)
     {
-        if (_error is not null)
-            return _error;
+        if (!_isOk)
+            return _error!;
         return getFallback();
     }
 
     public void ThrowIfError()
     {
-        if (_error is not null)
+        if (!_isOk)
         {
-            throw _error;
+            throw _error!;
         }
     }
 
@@ -289,7 +291,7 @@ public readonly struct Result<T> :
 
     public void Match(Action<T> onOk, Action<Exception> onError)
     {
-        if (_error is null)
+        if (_isOk)
         {
             onOk(_value!);
         }
@@ -305,7 +307,7 @@ public readonly struct Result<T> :
         where R : allows ref struct
 #endif
     {
-        if (_error is null)
+        if (_isOk)
         {
             return onOk(_value!);
         }
@@ -319,7 +321,7 @@ public readonly struct Result<T> :
 
     public Option<T> AsOption()
     {
-        if (_error is null)
+        if (_isOk)
         {
             return Option<T>.Some(_value!);
         }
@@ -333,9 +335,9 @@ public readonly struct Result<T> :
 
     public int CompareTo(Result<T> other)
     {
-        if (_error is null)
+        if (_isOk)
         {
-            if (other._error is null)
+            if (other._isOk)
             {
                 return Comparer<T>.Default.Compare(_value!, other._value!);
             }
@@ -346,7 +348,7 @@ public readonly struct Result<T> :
         }
         else
         {
-            if (other._error is null)
+            if (other._isOk)
             {
                 return 1; // Error > Ok
             }
@@ -359,7 +361,7 @@ public readonly struct Result<T> :
 
     public int CompareTo(T? ok)
     {
-        if (_error is null)
+        if (_isOk)
         {
             return Comparer<T>.Default.Compare(_value!, ok!);
         }
@@ -373,9 +375,9 @@ public readonly struct Result<T> :
 
     public bool Equals(Result<T> other)
     {
-        if (_error is null)
+        if (_isOk)
         {
-            if (other._error is null)
+            if (other._isOk)
             {
                 return EqualityComparer<T>.Default.Equals(_value!, other._value!);
             }
@@ -386,7 +388,7 @@ public readonly struct Result<T> :
         }
         else
         {
-            if (other._error is null)
+            if (other._isOk)
             {
                 return false;
             }
@@ -399,7 +401,7 @@ public readonly struct Result<T> :
 
     public bool Equals(T? ok)
     {
-        if (_error is null)
+        if (_isOk)
         {
             return EqualityComparer<T>.Default.Equals(_value!, ok!);
         }
@@ -409,7 +411,7 @@ public readonly struct Result<T> :
 
     public bool Equals(Exception? error)
     {
-        if (_error is not null)
+        if (!_isOk)
         {
             return EqualityComparer<Exception>.Default.Equals(_error!, error!);
         }
@@ -417,7 +419,7 @@ public readonly struct Result<T> :
         return false;
     }
 
-    public bool Equals(bool isOk) => _error is null;
+    public bool Equals(bool isOk) => _isOk;
 
     public override bool Equals([NotNullWhen(true)] object? obj)
         => obj switch
@@ -425,7 +427,7 @@ public readonly struct Result<T> :
             Result<T> result => Equals(result),
             T value => Equals(value),
             Exception ex => Equals(ex),
-            bool isOk => isOk == _error is null,
+            bool isOk => Equals(isOk),
             _ => false,
         };
 
@@ -433,26 +435,21 @@ public readonly struct Result<T> :
     public override int GetHashCode()
     {
 #if NETFRAMEWORK || NETSTANDARD2_0
-        if (_error is null)
+        if (_isOk)
         {
             if (_value is not null)
-            {
                 return _value.GetHashCode();
-            }
 
             return typeof(T).GetHashCode();
         }
         else
         {
             if (_error is not null)
-            {
                 return _error.GetHashCode();
-            }
-
             return typeof(Exception).GetHashCode();
         }
 #else
-        return HashCode.Combine(_value, _error);
+        return HashCode.Combine(_isOk, _value, _error);
 #endif
     }
 
@@ -462,7 +459,7 @@ public readonly struct Result<T> :
 
     public override string ToString()
     {
-        if (_error is null)
+        if (_isOk)
         {
             return $"Ok({_value})";
         }
@@ -476,7 +473,7 @@ public readonly struct Result<T> :
     {
         string? str;
 
-        if (_error is null)
+        if (_isOk)
         {
             if (_value is IFormattable)
             {
@@ -526,7 +523,7 @@ public readonly struct Result<T> :
         public ResultEnumerator(Result<T> result)
         {
             _result = result;
-            _canYield = result._error is null;
+            _canYield = result._isOk;
         }
 
         void IDisposable.Dispose()
@@ -550,7 +547,7 @@ public readonly struct Result<T> :
 
         public void Reset()
         {
-            _canYield = _result._error is null;
+            _canYield = _result._isOk;
         }
     }
 
@@ -560,31 +557,31 @@ public readonly struct Result<T> :
 
     public Result<N> Select<N>(Func<T, N> selector)
     {
-        if (_error is null)
+        if (_isOk)
         {
             return Result<N>.Ok(selector(_value!));
         }
         else
         {
-            return Result<N>.Error(_error);
+            return Result<N>.Error(_error!);
         }
     }
 
     public Result<N> Select<N>(Func<T, Result<N>> selector)
     {
-        if (_error is null)
+        if (_isOk)
         {
             return selector(_value!);
         }
         else
         {
-            return Result<N>.Error(_error);
+            return Result<N>.Error(_error!);
         }
     }
 
     public Result<N> Select<N>(Func<T, Option<N>> selector)
     {
-        if (_error is null)
+        if (_isOk)
         {
             if (selector(_value!).IsSome(out var some))
             {
@@ -592,30 +589,30 @@ public readonly struct Result<T> :
             }
             else
             {
-                return Result<N>.Error(new Exception());
+                return Result<N>.Error(new InvalidOperationException());
             }
         }
         else
         {
-            return Result<N>.Error(_error);
+            return Result<N>.Error(_error!);
         }
     }
 
     public Result<N> SelectMany<K, N>(Func<T, Result<K>> keySelector, Func<T, K, N> newSelector)
     {
-        if (_error is null)
+        if (_isOk)
         {
             var keySelectResult = keySelector(_value!);
-            if (keySelectResult._error is null)
+            if (keySelectResult._isOk)
             {
                 var newSelectResult = newSelector(_value!, keySelectResult._value!);
                 return Result<N>.Ok(newSelectResult);
             }
 
-            return Result<N>.Error(keySelectResult._error);
+            return Result<N>.Error(keySelectResult._error!);
         }
 
-        return Result<N>.Error(_error);
+        return Result<N>.Error(_error!);
     }
 
 #endregion

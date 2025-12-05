@@ -4,26 +4,58 @@
 namespace ScrubJay.Functional;
 
 /// <summary>
-/// A generic Problem for use as a non-<see cref="Exception"/> Error for a <see cref="Result{T,E}"/>
-/// that is a rough approximation of <see href="https://www.rfc-editor.org/rfc/rfc9457.html">Problem Details</see>
+/// A generic Problem for use as a non-<see cref="Exception"/> Error in a <see cref="Result{T,E}"/>.<br/>
+/// This is a rough approximation of <see href="https://www.rfc-editor.org/rfc/rfc9457.html">Problem Details</see> without the overhead of any ASP or Web related properties.<br/>
 /// </summary>
-public record class Problem
+public class Problem : IEnumerable
 {
-    public string? Title { get; set; }
-    
-    public string? Detail { get; set; }
-    
-    public Exception? Exception { get; set; }
-    
-    public Dictionary<string, object?> Data { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public string? Details { get; set; }
 
-    
-    public Problem() { }
-    
-    public Problem(string? title, string? detail = null, Exception? exception = null)
+    public string? Title { get; set; }
+
+    public Exception? Exception { get; set; }
+
+    public Dictionary<string, object?> Data { get; } = new(0, StringComparer.OrdinalIgnoreCase);
+
+
+    public Problem(Exception exception)
     {
+        if (exception is null)
+            throw new ArgumentNullException(nameof(exception));
+
+        this.Exception = exception;
+        this.Title = exception.GetType().Name;
+        this.Details = exception.Message;
+        foreach (DictionaryEntry data in exception.Data)
+        {
+            this.Data[data.Key.Stringify()] = data.Value;
+        }
+    }
+
+    public Problem(string? details)
+        : this(details, null, null) { }
+
+    public Problem(string? details, Exception? exception)
+        : this(details, null, exception) { }
+
+    public Problem(string? details, string? title)
+        : this(details, title, null) { }
+
+    public Problem(string? details, string? title, Exception? exception)
+    {
+        this.Details = details;
+        this.Exception = exception;
         this.Title = title;
-        this.Detail = detail;
-        this.Exception = exception;        
+    }
+
+
+    public void Add(string key, object? value)
+    {
+        this.Data[key] = value;
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return Data.GetEnumerator();
     }
 }

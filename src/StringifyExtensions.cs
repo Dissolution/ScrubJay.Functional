@@ -7,13 +7,13 @@ using BF = System.Reflection.BindingFlags;
 namespace ScrubJay.Functional;
 
 /// <summary>
-/// Extensions that provide a <see cref="Stringify{T}(T?)"/> operation on <i>any</i> type.
+/// Extensions that provide a <see cref="Stringify{T}(T?)"/> operation on <i>any</i> generic type.
 /// </summary>
 /// <remarks>
 /// This is vital when interacting with <c>.NET 9.0+</c>'s generic type 'constraint' <c>allows ref struct</c>.<br/>
 /// You cannot call <see cref="object.ToString()"/> on a generic value constrained with <c>allows ref struct</c>.<br/>
 /// All non-<c>ref struct</c> values and many <c>ref struct</c>s provide their own <c>ToString()</c> implementation,<br/>
-/// so this class creates custom delegates to call those methods (with a fallback for any type that doesn't have one).
+/// so this class emits and caches the delegates to call those ToString methods (with a fallback for any type that doesn't have one).
 /// </remarks>
 [PublicAPI]
 public static class StringifyExtensions

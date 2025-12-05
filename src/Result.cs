@@ -15,41 +15,45 @@ public readonly struct Result :
 #endif
     IEquatable<Result>
 {
-    #region Operators
+#region Operators
 
-    public static implicit operator bool(Result result) => result._error is null;
-    public static implicit operator Result(bool success) => success ? Ok : Error(new InvalidOperationException());
+    public static implicit operator bool(Result result) => result._isOk;
+    public static implicit operator Result(bool success) => success ? Ok : Error(null);
     public static implicit operator Result(Exception ex) => Error(ex);
     public static implicit operator Result(IMPL.Error<Exception> error) => Error(error.Value);
 
     public static bool operator ==(Result left, Result right) => left.Equals(right);
     public static bool operator !=(Result left, Result right) => !left.Equals(right);
 
-    #endregion
+#endregion
 
 
-    public static readonly Result Ok = new Result(null);
-    public static Result Error(Exception ex) => new Result(ex);
-    
+    public static readonly Result Ok = new Result(true, null);
+
+    public static Result Error(Exception? ex) => new Result(false, ex ?? new InvalidOperationException());
+
+    private readonly bool _isOk;
     private readonly Exception? _error;
 
-    private Result(Exception? error)
+    private Result(bool isOk, Exception? error)
     {
+        _isOk = isOk;
         _error = error;
+        Debug.Assert((isOk && error is null) || (!isOk && error is not null));
     }
 
 
-    public bool IsOk() => _error is null;
+    public bool IsOk() => _isOk;
 
 
-    #region Error
+#region Error
 
-    public bool IsError() => _error is not null;
+    public bool IsError() => !_isOk;
 
     public bool IsError([MaybeNullWhen(false)] out Exception error)
     {
         error = _error;
-        return error is not null;
+        return !_isOk;
     }
 
     /// <summary>
@@ -58,38 +62,38 @@ public readonly struct Result :
     /// <param name="errorPredicate"></param>
     /// <returns></returns>
     /// <a href="https://doc.rust-lang.org/std/result/enum.Result.html#method.is_err_and"/>
-    public bool IsErrorAnd(Func<Exception, bool> errorPredicate) => _error is not null && errorPredicate(_error!);
+    public bool IsErrorAnd(Func<Exception, bool> errorPredicate) => !_isOk && errorPredicate(_error!);
 
     public Exception ErrorOr(Exception fallback)
     {
-        if (_error is not null)
-            return _error;
+        if (!_isOk)
+            return _error!;
         return fallback;
     }
 
     public Exception ErrorOr(Func<Exception> getFallback)
     {
-        if (_error is not null)
-            return _error;
+        if (!_isOk)
+            return _error!;
         return getFallback();
     }
 
     [StackTraceHidden]
     public void ThrowIfError()
     {
-        if (_error is not null)
+        if (!_isOk)
         {
-            throw _error;
+            throw _error!;
         }
     }
 
-    #endregion
+#endregion
 
-    #region Match
+#region Match
 
     public void Match(Action onOk, Action<Exception> onError)
     {
-        if (_error is null)
+        if (_isOk)
         {
             onOk();
         }
@@ -101,8 +105,11 @@ public readonly struct Result :
 
 
     public R Match<R>(Func<R> onOk, Func<Exception, R> onError)
+#if NET9_0_OR_GREATER
+    where R : allows ref struct
+#endif
     {
-        if (_error is null)
+        if (_isOk)
         {
             return onOk();
         }
@@ -112,11 +119,11 @@ public readonly struct Result :
         }
     }
 
-    #endregion
+#endregion
 
     public Option<Unit> AsOption()
     {
-        if (_error is null)
+        if (_isOk)
         {
             return Some(default(Unit));
         }
@@ -126,16 +133,23 @@ public readonly struct Result :
         }
     }
 
-    #region Equality
+#region Equality
 
     public bool Equals(Result other)
     {
-        return EqualityComparer<Exception>.Default.Equals(_error!, other._error!);
+        if (_isOk)
+            return other._isOk;
+        return !other._isOk && EqualityComparer<Exception>.Default.Equals(_error!, other._error!);
     }
 
     public bool Equals(Exception? error)
     {
-        return EqualityComparer<Exception>.Default.Equals(_error!, error!);
+        return !_isOk && EqualityComparer<Exception>.Default.Equals(_error!, error!);
+    }
+
+    public bool Equals(bool success)
+    {
+        return _isOk == success;
     }
 
     public override bool Equals([NotNullWhen(true)] object? obj)
@@ -143,34 +157,45 @@ public readonly struct Result :
         {
             Result result => Equals(result),
             Exception ex => Equals(ex),
-            bool isOk => isOk == _error is null,
+            bool isOk => Equals(isOk),
             _ => false,
         };
 
 
     public override int GetHashCode()
     {
-        if (_error is not null)
+#if NETFRAMEWORK || NETSTANDARD2_0
+        if (_isOk)
         {
-            return _error.GetHashCode();
+            return typeof(Unit).GetHashCode();
         }
-
-        return 1;
+        else
+        {
+            if (_error is not null)
+                return _error.GetHashCode();
+            
+            return typeof(Exception).GetHashCode();
+        }
+#else
+        return HashCode.Combine(_isOk, _error);
+#endif
     }
 
-    #endregion
+#endregion
 
-    #region Formatting
+#region Formatting
 
     public override string ToString()
     {
-        if (_error is null)
+        if (_isOk)
         {
             return "Ok";
         }
-
-        return $"Error({_error})";
+        else
+        {
+            return $"Error({_error})";
+        }
     }
 
-    #endregion
+#endregion
 }

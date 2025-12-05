@@ -43,7 +43,7 @@ public readonly struct Result<T, E> :
 #region Operators
 
     public static implicit operator bool(Result<T, E> result) => result._isOk;
-    
+
     public static implicit operator Result<T, E>(T ok) => Ok(ok);
     public static implicit operator Result<T, E>(E error) => Error(error);
     public static implicit operator Result<T, E>(IMPL.Ok<T> ok) => Ok(ok.Value);
@@ -307,6 +307,9 @@ public readonly struct Result<T, E> :
 
 
     public R Match<R>(Func<T, R> onOk, Func<E, R> onError)
+#if NET9_0_OR_GREATER
+        where R : allows ref struct
+#endif
     {
         if (_isOk)
         {
@@ -445,10 +448,11 @@ public readonly struct Result<T, E> :
             bool isOk => _isOk == isOk,
             _ => false,
         };
-
+    
     public override int GetHashCode()
     {
-        if (_isOk)
+#if NETFRAMEWORK || NETSTANDARD2_0
+       if (_isOk)
         {
             if (_value is not null)
             {
@@ -466,6 +470,9 @@ public readonly struct Result<T, E> :
 
             return typeof(E).GetHashCode();
         }
+#else
+        return HashCode.Combine(_isOk, _value, _error);
+#endif
     }
 
 #endregion

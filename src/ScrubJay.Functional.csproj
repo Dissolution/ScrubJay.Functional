@@ -19,7 +19,7 @@
         <Authors>Dissolution</Authors>
 
         <Description>
-            Simple and performant functional types (Option&lt;T&gt;, Result&lt;T,E&gt;, Unit) for C#.
+            Simple and performant functional types (Option&lt;T&gt;, Result&lt;T,E&gt;, and Unit) for C#.
         </Description>
 
         <RepositoryUrl>https://github.com/Dissolution/ScrubJay.Functional</RepositoryUrl>

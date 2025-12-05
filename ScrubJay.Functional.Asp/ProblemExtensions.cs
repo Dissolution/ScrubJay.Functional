@@ -29,7 +29,7 @@ public static class ProblemExtensions
                 Type = problem.Exception?.GetType().Name,
                 Title = problem.Title,
                 Status = status,
-                Detail = problem.Detail,
+                Detail = problem.Details,
                 Instance = instance,
             };
 
