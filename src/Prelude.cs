@@ -1,5 +1,5 @@
 ﻿// prevent attribute name conflict with `JetBrains.Annotations.NotNullAttribute`
-//global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
+global using NotNullAttribute = System.Diagnostics.CodeAnalysis.NotNullAttribute;
 
 using ScrubJay.Functional.IMPL;
 

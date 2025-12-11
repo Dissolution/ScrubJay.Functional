@@ -15,7 +15,7 @@
         <IsPackable>true</IsPackable>
         <PackageId>ScrubJay.Functional</PackageId>
         <Title>ScrubJay - Functional</Title>
-        <Version>0.0.1-alpha</Version>
+        <Version>0.1.0-alpha</Version>
         <Authors>Dissolution</Authors>
 
         <Description>
